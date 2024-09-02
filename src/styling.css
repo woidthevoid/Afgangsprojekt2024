@@ -1,0 +1,14 @@
+#cesiumContainer {
+    width: 40%;
+    height: 40%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.button-container {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+}
