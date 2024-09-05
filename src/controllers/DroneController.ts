@@ -1,38 +1,38 @@
-import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, SampledPositionProperty } from "cesium";
+import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty } from "cesium";
 import { CesiumView } from "../views/CesiumView";
 
 export class DroneController {
-    private viewer: Viewer;
-    private map: CesiumView
+    private viewer: Viewer | null = null;
+    private map: CesiumView | null = null;
     private drone: Entity | null = null;
     //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
 
-    constructor(viewer: Viewer, map: CesiumView) {
-        this.viewer = viewer;
-        this.map = map
+    constructor() {}
 
-        /* const position = Cartesian3.fromDegrees(10.325663942903187, 55.472172681892225, 100);
-        this.currentPosition = position ? position : Cartesian3.ZERO;
+    setViewer(viewer: Viewer) {
+        this.viewer = viewer
+        console.log("DroneController.ts: viewer has been set")
+    }
 
-        // Initialize the position property using SampledPositionProperty
-        this.positionProperty = new SampledPositionProperty();
-        this.drone.position = this.positionProperty;
-
-        // Add the initial position to the property
-        this.positionProperty.addSample(JulianDate.now(), this.currentPosition);
-        console.log(position) */
-        /* const INITIAL_LONGITUDE = 10.325663942903187;
-        const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 100;
-        this.map.addDrone(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true) */
+    setDrone(drone: Entity) {
+        this.drone = drone
+        console.log("DroneController.ts: drone has been set")
     }
 
     onMoveClicked() {
-        const INITIAL_LONGITUDE = 10.325663942903187;
-        const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 100;
-        this.moveDrone(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, 1)
+        const lon = this.generatenewCoords(this.getCurrentLongitude());
+        const lat = this.generatenewCoords(this.getCurrentLatitude());
+        const alt = 100;
+        this.moveDrone(lon, lat, alt, 4)
+    }
+
+    generatenewCoords(coordinate: number) {
+        // Generate a random boolean value
+        const isPositive = Math.random() < 0.5;
+    
+        // Adjust the number by either +0.01 or -0.01
+        return isPositive ? coordinate + 0.0005 : coordinate - 0.0005;
     }
 
     getCurrentPosGeo() {
@@ -78,42 +78,55 @@ export class DroneController {
     } */
 
     moveDrone(longitude: number, latitude: number, altitude: number, duration: number) {
-        const startPosition = this.getCurrentPosCartesian();
-        if (!startPosition) {
-            throw new Error("Starting position is undefined");
+        if (!this.drone) {
+            console.warn("DroneController: No drone to move.");
+            return;
         }
+    
+        const startPosition = this.drone.position?.getValue(JulianDate.now());
+        if (!startPosition) {
+            console.warn("DroneController: Drone starting position is undefined.");
+            return;
+        }
+    
         const endPosition = Cartesian3.fromDegrees(longitude, latitude, altitude);
-        const startTime: number = performance.now();
-
-        console.log(
-            "Start pos:\n",
-            startPosition,
-            "End pos:\n",
-            `lon: ${this.getCurrentLongitude()}, lat: ${this.getCurrentLatitude()}, alt: ${this.getCurrentAltitude()}`
-        );
-
+        const startTime = performance.now();
+    
         const moveEntity = (timestamp: number) => {
-            const elapsed: number = (timestamp - startTime) / 1000;
-            const t: number = Math.min(elapsed / duration, 1);
-
+            const elapsed = (timestamp - startTime) / 1000;
+            const t = Math.min(elapsed / duration, 1);
+    
             // Interpolate position
             const interpolatedPosition = Cartesian3.lerp(startPosition, endPosition, t, new Cartesian3());
-
-            // Update the SampledPositionProperty with the interpolated position
-            /* const currentTime = JulianDate.now();
-            this.positionProperty.addSample(currentTime, interpolatedPosition); */
-            //this.drone.position = interpolatedPosition
-
+    
+            // Use ConstantPositionProperty to update the drone's position
+            if (this.drone) {
+                this.drone.position = new ConstantPositionProperty(interpolatedPosition);
+            }
+    
             if (t < 1.0) {
-                this.animationFrameId = requestAnimationFrame(moveEntity);
+                requestAnimationFrame(moveEntity);
             } else {
-                console.log("Reached destination");
-                this.animationFrameId = null;
+                console.log(
+                `
+                DroneController: Reached destination:
+                longitude: ${this.getCurrentLongitude()}
+                latitude: ${this.getCurrentLatitude()}
+                altitude: ${this.getCurrentAltitude()}
+                `
+                );
             }
         };
-
+    
         // Start the animation
-        this.animationFrameId = requestAnimationFrame(moveEntity);
+        console.log(
+        `
+        start pos:
+        longitude: ${this.getCurrentLongitude()}
+        latitude: ${this.getCurrentLatitude()}
+        altitude: ${this.getCurrentAltitude()}
+        `
+        )
+        requestAnimationFrame(moveEntity);
     }
-
 }
