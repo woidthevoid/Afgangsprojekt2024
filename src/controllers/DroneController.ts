@@ -1,23 +1,32 @@
 import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty } from "cesium";
 import { CesiumView } from "../views/CesiumView";
+import { PayloadController } from "./PayloadController";
 
 export class DroneController {
     private viewer: Viewer | null = null;
     private map: CesiumView | null = null;
     private drone: Entity | null = null;
+    private payloadController: PayloadController
     //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
 
-    constructor() {}
+    constructor() {
+        this.payloadController = new PayloadController();
+        this.animationFrameId;
+    }
 
     setViewer(viewer: Viewer) {
-        this.viewer = viewer
-        console.log("DroneController.ts: viewer has been set")
+        this.viewer = viewer;
+        console.log("DroneController.ts: viewer has been set");
     }
 
     setDrone(drone: Entity) {
         this.drone = drone
-        console.log("DroneController.ts: drone has been set")
+        console.log("DroneController.ts: drone has been set");
+    }
+
+    setPayload(payload: Entity) {
+        this.payloadController.setPayload(payload);
     }
 
     onMoveClicked() {
@@ -25,6 +34,22 @@ export class DroneController {
         const lat = this.generatenewCoords(this.getCurrentLatitude());
         const alt = 100;
         this.moveDrone(lon, lat, alt, 4)
+    }
+
+    onRotateClicked() {
+        //this.payloadController.rotatePayloadBy90Degrees()
+    }
+
+    setPayloadRoll(degrees: number) {
+        this.payloadController.updatePayloadRoll(degrees)
+    }
+
+    setPayloadPitch(degrees: number) {
+        this.payloadController.updatePayloadPitch(degrees)
+    }
+
+    setPayloadYaw(degrees: number) {
+        this.payloadController.updatePayloadYaw(degrees)
     }
 
     generatenewCoords(coordinate: number) {
@@ -105,7 +130,7 @@ export class DroneController {
             }
     
             if (t < 1.0) {
-                requestAnimationFrame(moveEntity);
+                this.animationFrameId = requestAnimationFrame(moveEntity);
             } else {
                 console.log(
                 `
@@ -127,6 +152,12 @@ export class DroneController {
         altitude: ${this.getCurrentAltitude()}
         `
         )
-        requestAnimationFrame(moveEntity);
+        this.animationFrameId = requestAnimationFrame(moveEntity);
+    }
+
+    cancelMoveDrone() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
     }
 }

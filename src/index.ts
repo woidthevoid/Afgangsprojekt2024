@@ -8,30 +8,76 @@ const view = new CesiumView('cesiumContainer');
 async function init() {
     try {
         await view.initialize();
-
-        /* const droneInstance = view.getDroneInstance();
-        if (!droneInstance) {
-            console.error('Failed to initialize drone.');
-            return;
-        } */
-
-        //const droneController = new DroneController(view.getViewerInstance()!, view);
-
-        // btn click events
-        const moveBtn = document.getElementById('moveBtn');
-        if (moveBtn) {
-            moveBtn.addEventListener('click', () => {
-                view.onMoveClicked();
-            });
-        }
-        const addDroneBtn = document.getElementById("addDroneBtn");
-        if (addDroneBtn) {
-            addDroneBtn.addEventListener('click', () => {
-                view.onAddDroneClicked()
-            });
-        }
+        setupEventListeners()
     } catch (error) {
         console.error('An error occurred during initialization:', error);
+    }
+}
+
+function setupEventListeners() {
+    const moveBtn = document.getElementById('moveBtn');
+    if (moveBtn) {
+        moveBtn.addEventListener('click', () => {
+            view.onMoveClicked();
+        });
+    }
+    const addDroneBtn = document.getElementById("addDroneBtn");
+    if (addDroneBtn) {
+        addDroneBtn.addEventListener('click', () => {
+            view.onAddDroneClicked()
+        });
+    }
+    const rotateBtn = document.getElementById("rotateBtn");
+    if (rotateBtn) {
+        rotateBtn.addEventListener('click', () => {
+            view.onRotateClicked()
+        });
+    }
+    const cancelBtn = document.getElementById("cancelBtn");
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            view.onCancelClicked()
+        });
+    }
+    const rollBtn = document.getElementById("rollBtn");
+    if (rollBtn) {
+        rollBtn.addEventListener('click', () => {
+            const rollInput = document.getElementById("rollInput") as HTMLInputElement;
+            if (rollInput) {
+                const roll = parseFloat(rollInput.value);
+                view.setPayloadRoll(roll)
+            }
+        });
+    }
+    const pitchBtn = document.getElementById("pitchBtn");
+    if (pitchBtn) {
+        pitchBtn.addEventListener('click', () => {
+            const pitchInput = document.getElementById("pitchInput") as HTMLInputElement;
+            if (pitchInput) {
+                const pitch = parseFloat(pitchInput.value);
+                view.setPayloadPitch(pitch)
+            }
+        });
+    }
+    const yawBtn = document.getElementById("yawBtn");
+    if (yawBtn) {
+        yawBtn.addEventListener('click', () => {
+            const yawInput = document.getElementById("yawInput") as HTMLInputElement;
+            if (yawInput) {
+                const yaw = parseFloat(yawInput.value);
+                view.setPayloadYaw(yaw)
+            }
+        });
+    }
+    const trackAntennaBtn = document.getElementById("trackAntennaBtn") as HTMLInputElement;
+    if (trackAntennaBtn) {
+        trackAntennaBtn.addEventListener("change", function () {
+            if (this.checked) {
+                view.trackAntenna();
+            } else {
+                view.stopTrackingAntenna();
+            }
+        });
     }
 }
 
