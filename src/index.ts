@@ -3,10 +3,10 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import { CesiumView } from "./views/CesiumView";
 
 (window as any).CESIUM_BASE_URL = '/Cesium/';
+const view = new CesiumView('cesiumContainer');
 
 async function init() {
     try {
-        const view = new CesiumView('cesiumContainer');
         await view.initialize();
 
         /* const droneInstance = view.getDroneInstance();
@@ -37,7 +37,10 @@ async function init() {
 
 init();
 
-/* (window as any).testprint = function() {
-    console.log('testprint');
+(window as any).move = function(lon: number, lat: number, alt: number) {
+    if (typeof lon === 'number' && typeof lat === 'number' && typeof alt === 'number') {
+        view.testpyqtmove(lon, lat, alt);
+    } else {
+        console.error("Invalid types for lon, lat, or alt");
+    }
 };
- */

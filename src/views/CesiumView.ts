@@ -68,6 +68,10 @@ export class CesiumView {
         }
     }
 
+    testpyqtmove(lon: number, lat: number, alt: number) {
+        this.droneController?.moveDrone(lon, lat, alt, 10)
+    }
+
     onMoveClicked() {
         console.log("Move clicked");
         this.droneController?.onMoveClicked()
