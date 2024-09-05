@@ -10,10 +10,10 @@ export class DroneEntity {
       id: "drone-entity",
       position: position,
       model: {
-        uri: drone, // Path to your glTF file
-        scale: 1.0, // Adjust the scale as needed
-        minimumPixelSize: 64, // Minimum size in pixels to render the model
-        maximumScale: 200, // Optional: cap the scaling to avoid the model being too large
+        uri: drone, 
+        scale: 1.0, 
+        minimumPixelSize: 64, 
+        maximumScale: 200, 
       },
       point: {
         pixelSize: 10,
