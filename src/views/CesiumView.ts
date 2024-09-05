@@ -12,14 +12,16 @@ export class CesiumView {
             console.warn("Cesium viewer already initialized.");
             return;
         }
-
+    
         Ion.defaultAccessToken = process.env.CESIUM_ION_TOKEN || '';
-
+    
         try {
             const INITIAL_LONGITUDE = 10.325663942903187;
             const INITIAL_LATITUDE = 55.472172681892225;
             const INITIAL_ALTITUDE = 100;
-
+            
+            console.log("Initializing Cesium viewer...");
+    
             const terrainProvider = await createWorldTerrainAsync();
             this.viewer = new Viewer(this.containerId, {
                 terrainProvider: terrainProvider,
@@ -40,9 +42,25 @@ export class CesiumView {
             this.drone = new DroneEntity(Cartesian3.fromDegrees(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE));
             this.viewer.entities.add(this.drone.getEntity());
             this.viewer.trackedEntity = this.drone.getEntity();
-
+            
+            console.log("Cesium viewer initialized");
         } catch (error) {
-            console.error("Failed to initialize Cesium viewer:", error);
+            // Log full error details
+            if (error instanceof Error) {
+                console.error("Failed to initialize Cesium viewer:", error.message, error.stack);
+            } else {
+                console.error("Failed to initialize Cesium viewer:", error);
+            }
+        }
+    }
+
+    addDrone(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
+        this.drone = new DroneEntity(Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
+        if (this.viewer) {
+            this.viewer.entities.add(this.drone.getEntity());
+            if (tracked) {
+            this.viewer.trackedEntity = this.drone.getEntity();
+            }
         }
     }
 

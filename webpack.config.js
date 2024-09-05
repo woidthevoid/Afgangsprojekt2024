@@ -5,7 +5,7 @@ const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   entry: './src/index.ts',
-  devtool: false,  // Disable source maps
+  //devtool: false,  // enable/disable source maps
   module: {
     rules: [
       {
