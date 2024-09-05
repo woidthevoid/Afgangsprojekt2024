@@ -17,6 +17,19 @@ module.exports = {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.(glb|gltf)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'assets/[name].[hash].[ext]',
+              outputPath: 'assets',
+              publicPath: 'assets',
+            },
+          },
+        ],
+      },
     ],
   },
   resolve: {
@@ -39,9 +52,11 @@ module.exports = {
     new Dotenv(),
   ],
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),
-    },
+    static: [
+      {
+        directory: path.join(__dirname, 'dist'),
+      },
+    ],
     compress: true,
     port: 9000,
     hot: false,  // Disable Hot Module Replacement
