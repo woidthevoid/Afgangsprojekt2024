@@ -1,4 +1,4 @@
-import { Viewer, createWorldTerrainAsync, Ion, Cartesian3, JulianDate, Transforms, Quaternion, Cartographic, sampleTerrainMostDetailed, Math as CesiumMath } from "cesium";
+import { Viewer, createWorldTerrainAsync, Ion, Cartesian3, JulianDate, Transforms, Quaternion, Cartographic, sampleTerrainMostDetailed, Math as CesiumMath} from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
@@ -40,6 +40,8 @@ export class CesiumView {
             const terrainProvider = await createWorldTerrainAsync();
             this.viewer = new Viewer(this.containerId, {
                 terrainProvider: terrainProvider,
+                //globe: false,
+                //skyAtmosphere: new SkyAtmosphere(),
                 animation: false,
                 timeline: false,
                 fullscreenButton: false,
@@ -54,15 +56,16 @@ export class CesiumView {
                 creditContainer: document.createElement('div') // Hide credits
             });
             this.viewer.scene.globe.depthTestAgainstTerrain = true;
-            /* this.drone = new DroneEntity(Cartesian3.fromDegrees(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE));
-            this.viewer.entities.add(this.drone.getEntity());
-            this.viewer.trackedEntity = this.drone.getEntity(); */
+
+            /* this.viewer.scene.primitives.add(
+                await Cesium3DTileset.fromIonAssetId(2275207),
+            ); */
             
             console.log("Cesium viewer initialized");
             this.droneController?.setViewer(this.viewer)
 
             this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
-            this.mountAntennaToGround()
+            //this.mountAntennaToGround()
 
         } catch (error) {
             // Log full error details

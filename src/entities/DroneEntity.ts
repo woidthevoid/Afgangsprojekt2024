@@ -1,4 +1,4 @@
-import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer } from "cesium";
+import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
 import drone from "../assets/drone.glb";
 import drone2 from "../assets/drone2.glb"
 import antenna from "../assets/antenna.glb"
@@ -18,6 +18,7 @@ export class DroneEntity {
           scale: 0.5,
           minimumPixelSize: 64,
           maximumScale: 200,
+          heightReference: HeightReference.RELATIVE_TO_GROUND
         },
       });
   
@@ -45,6 +46,7 @@ export class DroneEntity {
           scale: 3,
           minimumPixelSize: 32,
           maximumScale: 100,
+          heightReference: HeightReference.RELATIVE_TO_GROUND
         },
         orientation: Quaternion.IDENTITY, // default orientation
       });
