@@ -1,20 +1,28 @@
 import { Entity, Cartesian3, Color, ModelGraphics } from "cesium";
+import drone from "../assets/drone.glb";
+console.log(drone);
 
 export class DroneEntity {
-    private entity: Entity;
+  private entity: Entity;
 
-    constructor(position: Cartesian3) {
-        this.entity = new Entity({
-            id: 'drone-entity',
-            position: position,
-            point: {
-                pixelSize: 10,
-                color: Color.RED
-            }
-        });
-    }
+  constructor(position: Cartesian3) {
+    this.entity = new Entity({
+      id: "drone-entity",
+      position: position,
+      model: {
+        uri: drone, 
+        scale: 1.0, 
+        minimumPixelSize: 64, 
+        maximumScale: 200, 
+      },
+      point: {
+        pixelSize: 10,
+        color: Color.RED,
+      },
+    });
+  }
 
-    getEntity(): Entity {
-        return this.entity;
-    }
+  getEntity(): Entity {
+    return this.entity;
+  }
 }
