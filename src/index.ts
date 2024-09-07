@@ -84,9 +84,25 @@ function setupEventListeners() {
 init();
 
 (window as any).move = function(lon: number, lat: number, alt: number) {
-    if (typeof lon === 'number' && typeof lat === 'number' && typeof alt === 'number') {
+    try {
         view.testpyqtmove(lon, lat, alt);
-    } else {
-        console.error("Invalid types for lon, lat, or alt");
+    } catch (error) {
+        console.error('Error when trying to move drone - ', error);
+    }
+};
+
+(window as any).updatePayloadOrientation = function(roll: number, pitch: number, yaw: number) {
+    try {
+        
+    } catch (error) {
+
+    }
+};
+
+(window as any).updateDronePosition = function(lon: number, lat: number, alt: number) {
+    try {
+        view.droneController.moveDrone(lon, lat, alt, 0.5)
+    } catch (error) {
+        console.error("Error when trying to update drone position - ", error)
     }
 };

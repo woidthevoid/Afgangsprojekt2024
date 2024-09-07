@@ -31,8 +31,8 @@ export class CesiumView {
             const INITIAL_LATITUDE = 55.472172681892225;
             const INITIAL_ALTITUDE = 100;
 
-            const ANTENNA_LONGITUDE = 10.325663942903187;
-            const ANTENNA_LATITUDE = 55.472172681892225;
+            const ANTENNA_LONGITUDE = 10.32580470;
+            const ANTENNA_LATITUDE = 55.47177510;
             const ANTENNA_ALTITUDE = 40;
             
             console.log("Initializing Cesium viewer...");
@@ -133,9 +133,11 @@ export class CesiumView {
 
     onAddDroneClicked() {
         console.log("add drone test")
+        const ANTENNA_LONGITUDE = 10.32580470;
+        const ANTENNA_LATITUDE = 55.47177510;
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 100;
+        const INITIAL_ALTITUDE = 50;
         this.addDrone(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true)
     }
 

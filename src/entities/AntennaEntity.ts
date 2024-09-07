@@ -11,9 +11,9 @@ export class AntennaEntity {
             position: position,
             model: {
                 uri: antenna,
-                scale: 1,
-                minimumPixelSize: 64,
-                maximumScale: 200,
+                scale: 0.4,
+                //minimumPixelSize: 64,
+                //maximumScale: 200,
                 heightReference: HeightReference.CLAMP_TO_GROUND
             },
         })

@@ -116,7 +116,9 @@ export class DroneController {
     
         const endPosition = Cartesian3.fromDegrees(longitude, latitude, altitude);
         const startTime = performance.now();
-    
+        
+        //this.cancelMoveDrone()
+
         const moveEntity = (timestamp: number) => {
             const elapsed = (timestamp - startTime) / 1000;
             const t = Math.min(elapsed / duration, 1);
