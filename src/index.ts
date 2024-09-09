@@ -73,9 +73,11 @@ function setupEventListeners() {
     if (trackAntennaBtn) {
         trackAntennaBtn.addEventListener("change", function () {
             if (this.checked) {
-                view.trackAntenna();
+                view.payloadTrackAntenna();
+                //view.cameraTrackAntenna();
             } else {
-                view.stopTrackingAntenna();
+                view.payloadStopTrackingAntenna();
+                //view.cameraStopTrackingAntenna();
             }
         });
     }

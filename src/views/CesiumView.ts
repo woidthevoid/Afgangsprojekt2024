@@ -1,4 +1,16 @@
-import { Viewer, createWorldTerrainAsync, Ion, Cartesian3, JulianDate, Transforms, Quaternion, Cartographic, sampleTerrainMostDetailed, Math as CesiumMath} from "cesium";
+import { 
+    Viewer, 
+    createWorldTerrainAsync, 
+    Ion, 
+    Cartesian3, 
+    JulianDate, 
+    Transforms, 
+    Quaternion, 
+    Cartographic, 
+    sampleTerrainMostDetailed, 
+    Math as CesiumMath, 
+    HeadingPitchRoll
+} from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
@@ -8,14 +20,16 @@ export class CesiumView {
     private viewer: Viewer | null = null;
     private drone: DroneEntity | null = null;
     private antenna: AntennaEntity | null = null;
-    private trackAntennaCallback: (() => void) | null = null;
+    private payloadTrackAntennaCallback: (() => void) | null = null;
+    private cameraTrackAntennaCallback: (() => void) | null = null;
     droneController: DroneController;
     antennaController: AntennaController;
 
     constructor(private containerId: string) {
         this.droneController = new DroneController()
         this.antennaController = new AntennaController()
-        this.trackAntennaCallback = null;
+        this.payloadTrackAntennaCallback = null;
+        this.cameraTrackAntennaCallback = null;
     }
 
     async initialize() {
@@ -62,7 +76,7 @@ export class CesiumView {
             ); */
             
             console.log("Cesium viewer initialized");
-            this.droneController?.setViewer(this.viewer)
+            this.droneController?.setViewer(this.viewer);
 
             this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
             //this.mountAntennaToGround()
@@ -79,12 +93,12 @@ export class CesiumView {
 
     mountAntennaToGround() {
         if (!this.viewer) {
-            return
+            return;
         }
         const terrainProvider = this.viewer.terrainProvider;
-        const antennaPosition = this.antennaController.getCurrentPosCartesian()
+        const antennaPosition = this.antennaController.getCurrentPosCartesian();
         if (!antennaPosition) {
-            return
+            return;
         }
         const cartographicPosition = Cartographic.fromCartesian(antennaPosition);
         sampleTerrainMostDetailed(terrainProvider, [cartographicPosition])
@@ -101,6 +115,65 @@ export class CesiumView {
             .catch((error) => {
                 console.error("Failed to sample terrain height:", error);
             });
+    }
+
+    updateCameraOrientationToAntenna2() {
+        if (!this.antenna || !this.drone || !this.viewer) {
+            return;
+        }
+    
+        const antennaPosition = this.antenna.getEntity().position?.getValue(JulianDate.now());
+        const dronePosition = this.droneController.getCurrentPosCartesian();
+    
+        if (!antennaPosition || !dronePosition) {
+            return;
+        }
+    
+        const dronePositionCartographic = Cartographic.fromCartesian(dronePosition);
+    
+        //adjust the camera to be behind and above the drone
+        const offsetDistance = 100.0;
+        const heightAboveDrone = 200.0;
+    
+        //calculate the camera's new position behind and above the drone
+        const cameraOffset = new Cartesian3(
+            dronePosition.x - offsetDistance,
+            dronePosition.y - offsetDistance,
+            dronePosition.z + heightAboveDrone
+        );
+    
+        //calculate the direction vector to make the camera look at the antenna
+        const directionToAntenna = Cartesian3.normalize(
+            Cartesian3.subtract(antennaPosition, cameraOffset, new Cartesian3()),
+            new Cartesian3()
+        );
+    
+        //manually update the camera's position and orientation
+        this.viewer.camera.setView({
+            destination: cameraOffset,
+            orientation: {
+                direction: directionToAntenna, //make the camera look at the antenna
+                up: new Cartesian3(0, 0, 1) //keep the camera's up vector aligned with the globe's up direction
+            }
+        });
+    }
+
+    updateCameraOrientationToAntenna() {
+        const dronePos = this.droneController.getCurrentPosCartesian();
+        const antennaPos = this.antennaController.getCurrentPosCartesian();
+        if (!this.viewer || !dronePos || !antennaPos) {
+            console.error("Viewer is undefined");
+            return
+        }
+
+        //calculate the heading and pitch towards the antenna
+        const heading = this.calculateHeading(dronePos, antennaPos);
+        const pitch = this.calculatePitch(dronePos, antennaPos);
+
+        //update the camera to look towards the antenna
+        this.viewer.camera.setView({
+            orientation: new HeadingPitchRoll(heading, pitch, 0) //heading, pitch, roll
+        });
     }
 
     testpyqtmove(lon: number, lat: number, alt: number) {
@@ -150,7 +223,7 @@ export class CesiumView {
         const payloadEntity = this.drone.getPayload()
         //this.viewer.entities.add(droneEntity);
         if (tracked) {
-        this.viewer.trackedEntity = droneEntity;
+            this.viewer.trackedEntity = droneEntity;
         }
         console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
         this.droneController?.setDrone(droneEntity)
@@ -194,24 +267,53 @@ export class CesiumView {
         this.drone.updatePayloadOrientation(quaternion);
     }
 
-    trackAntenna() {
+    payloadTrackAntenna() {
         if (!this.viewer) {
             console.error("Viewer is undefined");
             return
         }
-        this.trackAntennaCallback = () => {
+        this.payloadTrackAntennaCallback = () => {
             this.updatePayloadOrientationToAntenna(); 
         };
-        this.viewer.clock.onTick.addEventListener(this.trackAntennaCallback);
+        this.viewer.clock.onTick.addEventListener(this.payloadTrackAntennaCallback);
     }
 
-    stopTrackingAntenna() {
-        if (this.trackAntennaCallback) {
-            if(this.viewer) {
-                this.viewer.clock.onTick.removeEventListener(this.trackAntennaCallback);
-            this.trackAntennaCallback = null;
-            }
+    payloadStopTrackingAntenna() {
+        if (this.payloadTrackAntennaCallback && this.viewer) {
+            this.viewer.clock.onTick.removeEventListener(this.payloadTrackAntennaCallback);
+            this.payloadTrackAntennaCallback = null;
         }
+    }
+
+    cameraTrackAntenna() {
+        if (!this.viewer) {
+            console.error("Viewer is undefined");
+            return
+        }
+        this.cameraTrackAntennaCallback = () => {
+            this.updateCameraOrientationToAntenna();
+        };
+        this.viewer.clock.onTick.addEventListener(this.cameraTrackAntennaCallback);
+    }
+
+    cameraStopTrackingAntenna() {
+        if (this.cameraTrackAntennaCallback && this.viewer) {
+            this.viewer.clock.onTick.removeEventListener(this.cameraTrackAntennaCallback);
+            this.cameraTrackAntennaCallback = null;
+        }
+    }
+
+    //helper function to calculate heading from direction vector
+    calculateHeading(fromPosition: Cartesian3, toPosition: Cartesian3): number {
+        const direction = Cartesian3.subtract(toPosition, fromPosition, new Cartesian3());
+        return Math.atan2(direction.y, direction.x);
+    }
+
+    //helper function to calculate pitch from direction vector
+    calculatePitch(fromPosition: Cartesian3, toPosition: Cartesian3): number {
+        const direction = Cartesian3.subtract(toPosition, fromPosition, new Cartesian3());
+        const flatDistance = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+        return Math.atan2(direction.z, flatDistance);
     }
 
     getViewerInstance(): Viewer | null {

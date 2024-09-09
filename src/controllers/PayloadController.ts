@@ -29,7 +29,7 @@ export class PayloadController {
           return;
         }
       
-        // Create the new rotation based on the provided yaw, pitch, and roll
+        // Create the new rotation based on yaw, pitch, and roll
         const newRotation = Quaternion.fromHeadingPitchRoll(new HeadingPitchRoll(
           CesiumMath.toRadians(yaw),
           CesiumMath.toRadians(pitch),
