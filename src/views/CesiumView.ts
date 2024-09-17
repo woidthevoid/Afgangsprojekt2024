@@ -12,11 +12,13 @@ import {
     HeadingPitchRoll,
     Entity,
     Color,
+    HeightReference,
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
+import { relative } from "path";
 
 export class CesiumView {
     private viewer: Viewer | null = null;
@@ -337,22 +339,35 @@ export class CesiumView {
     }
 
     renderFlightPath() {
-        if(!this.viewer) {
+        if (!this.viewer) {
             return;
         }
-
+    
         const flightHistory = this.droneController.getFlightHistory();
-        if(this.flightPathEntity) {
+        if (this.flightPathEntity) {
             this.viewer.entities.remove(this.flightPathEntity);
         }
-
+    
+        // Define the offset (e.g., the difference between the drone's height and the polyline's desired height)
+        const heightOffset = 50; // Adjust this value as needed
+    
+        // Adjust flight path positions with the height offset
+        const adjustedFlightHistory = flightHistory.map(position => {
+            const cartographicPos = Cartographic.fromCartesian(position);
+            return Cartesian3.fromDegrees(
+                CesiumMath.toDegrees(cartographicPos.longitude),
+                CesiumMath.toDegrees(cartographicPos.latitude),
+                cartographicPos.height + heightOffset // Apply the offset here
+            );
+        });
+    
         this.flightPathEntity = this.viewer.entities.add({
             polyline: {
-                positions: flightHistory,
+                positions: adjustedFlightHistory,
                 width: 3,
-                material: Color.RED,
-            }
-        })
+                material: Color.YELLOW,
+            },
+        });
     }
 
     destroy() {
