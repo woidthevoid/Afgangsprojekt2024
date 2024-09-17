@@ -14,7 +14,7 @@ export class AntennaEntity {
                 scale: 0.4,
                 //minimumPixelSize: 64,
                 //maximumScale: 200,
-                heightReference: HeightReference.CLAMP_TO_GROUND
+                heightReference: HeightReference.CLAMP_TO_TERRAIN
             },
         })
     }

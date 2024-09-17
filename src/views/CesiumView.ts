@@ -12,7 +12,8 @@ import {
     HeadingPitchRoll,
     Entity,
     CallbackProperty,
-    Color
+    Color,
+    createGooglePhotorealistic3DTileset
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
@@ -55,12 +56,14 @@ export class CesiumView {
             const ANTENNA_ALTITUDE = 0;
             
             console.log("Initializing Cesium viewer...");
-    
+            
             const terrainProvider = await createWorldTerrainAsync();
             this.viewer = new Viewer(this.containerId, {
                 terrainProvider: terrainProvider,
                 //globe: false,
                 //skyAtmosphere: new SkyAtmosphere(),
+                requestRenderMode: true,
+                maximumRenderTimeChange: Infinity,
                 animation: false,
                 timeline: false,
                 fullscreenButton: false,
@@ -74,6 +77,9 @@ export class CesiumView {
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
             });
+            this.viewer.scene.debugShowFramesPerSecond = true
+
+            createGooglePhotorealistic3DTileset
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
             /* this.viewer.scene.primitives.add(

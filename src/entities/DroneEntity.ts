@@ -16,8 +16,8 @@ export class DroneEntity {
         model: {
           uri: drone2,
           scale: 0.1,
-          minimumPixelSize: 64,
-          maximumScale: 200,
+          //minimumPixelSize: 64,
+          //maximumScale: 200,
           heightReference: HeightReference.RELATIVE_TO_GROUND
         },
       });
@@ -44,8 +44,8 @@ export class DroneEntity {
         model: {
           uri: camera,
           scale: 8,
-          minimumPixelSize: 32,
-          maximumScale: 100,
+          //minimumPixelSize: 32,
+          //maximumScale: 100,
           heightReference: HeightReference.RELATIVE_TO_GROUND
         },
         orientation: Quaternion.IDENTITY, // default orientation
