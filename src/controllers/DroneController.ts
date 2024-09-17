@@ -9,6 +9,7 @@ export class DroneController {
     private payloadController: PayloadController
     //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
+    private flightHistory: Cartesian3[] = [];
 
     constructor() {
         this.payloadController = new PayloadController();
@@ -125,6 +126,11 @@ export class DroneController {
     
             // Interpolate position
             const interpolatedPosition = Cartesian3.lerp(startPosition, endPosition, t, new Cartesian3());
+
+                if (this.drone) {
+                    this.drone.position = new ConstantPositionProperty(interpolatedPosition);
+                }
+                this.flightHistory.push(Cartesian3.clone(interpolatedPosition));
     
             // Use ConstantPositionProperty to update the drone's position
             if (this.drone) {
@@ -161,5 +167,10 @@ export class DroneController {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
         }
+    }
+
+    // Get drone flight history from array
+    getFlightHistory() {
+        return this.flightHistory;
     }
 }

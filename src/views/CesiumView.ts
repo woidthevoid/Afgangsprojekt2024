@@ -9,7 +9,9 @@ import {
     Cartographic, 
     sampleTerrainMostDetailed, 
     Math as CesiumMath, 
-    HeadingPitchRoll
+    HeadingPitchRoll,
+    Entity,
+    Color,
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
@@ -22,6 +24,7 @@ export class CesiumView {
     private antenna: AntennaEntity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
     private cameraTrackAntennaCallback: (() => void) | null = null;
+    private flightPathEntity: Entity | null = null;
     droneController: DroneController;
     antennaController: AntennaController;
 
@@ -178,10 +181,15 @@ export class CesiumView {
 
     testpyqtmove(lon: number, lat: number, alt: number) {
         this.droneController?.moveDrone(lon, lat, alt, 10)
+
+        setInterval(() => {
+            this.renderFlightPath();
+        }, 1000);
     }
 
     onMoveClicked() {
         this.droneController?.onMoveClicked()
+        this.renderFlightPath();
     }
 
     onRotateClicked() {
@@ -326,6 +334,25 @@ export class CesiumView {
 
     getAntennaInstance(): AntennaEntity | null {
         return this.antenna;
+    }
+
+    renderFlightPath() {
+        if(!this.viewer) {
+            return;
+        }
+
+        const flightHistory = this.droneController.getFlightHistory();
+        if(this.flightPathEntity) {
+            this.viewer.entities.remove(this.flightPathEntity);
+        }
+
+        this.flightPathEntity = this.viewer.entities.add({
+            polyline: {
+                positions: flightHistory,
+                width: 3,
+                material: Color.RED,
+            }
+        })
     }
 
     destroy() {
