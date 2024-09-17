@@ -1,4 +1,4 @@
-import {Entity, Cartesian3, Color} from "cesium";
+import {Entity, Cartesian3, Color, ConstantPositionProperty, HeightReference} from "cesium";
 import antenna from "../assets/antenna.glb";
 console.log(antenna);
 
@@ -11,14 +11,19 @@ export class AntennaEntity {
             position: position,
             model: {
                 uri: antenna,
-                scale: 2.0,
-                minimumPixelSize: 64,
-                maximumScale: 200,
+                scale: 0.4,
+                //minimumPixelSize: 64,
+                //maximumScale: 200,
+                heightReference: HeightReference.CLAMP_TO_GROUND
             },
         })
     }
 
     getEntity(): Entity {
         return this.entity;
+    }
+
+    setPos(pos: Cartesian3) {
+        this.entity.position = new ConstantPositionProperty(pos)
     }
 }
