@@ -1,4 +1,4 @@
-import { Entity, Cartesian3, Color, ModelGraphics } from "cesium";
+import { Entity, Cartesian3, Color, ModelGraphics, SampledPositionProperty, JulianDate, PathGraphics } from "cesium";
 import drone from "../assets/drone.glb";
 console.log(drone);
 
@@ -19,6 +19,10 @@ export class DroneEntity {
         pixelSize: 10,
         color: Color.RED,
       },
+      path: new PathGraphics({
+        width: 2,
+        material: Color.RED,
+      }),
     });
   }
 
