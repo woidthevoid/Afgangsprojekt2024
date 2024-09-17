@@ -9,7 +9,10 @@ import {
     Cartographic, 
     sampleTerrainMostDetailed, 
     Math as CesiumMath, 
-    HeadingPitchRoll
+    HeadingPitchRoll,
+    Entity,
+    CallbackProperty,
+    Color
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
@@ -20,6 +23,7 @@ export class CesiumView {
     private viewer: Viewer | null = null;
     private drone: DroneEntity | null = null;
     private antenna: AntennaEntity | null = null;
+    private pointingLine: Entity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
     private cameraTrackAntennaCallback: (() => void) | null = null;
     droneController: DroneController;
@@ -30,6 +34,7 @@ export class CesiumView {
         this.antennaController = new AntennaController()
         this.payloadTrackAntennaCallback = null;
         this.cameraTrackAntennaCallback = null;
+        this.pointingLine = null;
     }
 
     async initialize() {
@@ -47,7 +52,7 @@ export class CesiumView {
 
             const ANTENNA_LONGITUDE = 10.32580470;
             const ANTENNA_LATITUDE = 55.47177510;
-            const ANTENNA_ALTITUDE = 40;
+            const ANTENNA_ALTITUDE = 0;
             
             console.log("Initializing Cesium viewer...");
     
@@ -69,7 +74,7 @@ export class CesiumView {
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
             });
-            this.viewer.scene.globe.depthTestAgainstTerrain = true;
+            //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
             /* this.viewer.scene.primitives.add(
                 await Cesium3DTileset.fromIonAssetId(2275207),
@@ -78,7 +83,7 @@ export class CesiumView {
             console.log("Cesium viewer initialized");
             this.droneController?.setViewer(this.viewer);
 
-            this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
+            //this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
             //this.mountAntennaToGround()
 
         } catch (error) {
@@ -176,6 +181,28 @@ export class CesiumView {
         });
     }
 
+    drawPayloadPointingLine() {
+        if (this.pointingLine || !this.viewer || !this.drone || !this.antenna) {
+            return
+        }
+        this.pointingLine = this.viewer.entities.add({
+            polyline: {
+                positions: new CallbackProperty(() => {
+                    const payloadPosition = this.droneController.payloadController.getCurrentPosCartesian();
+                    const antennaPosition = this.antennaController.getCurrentPosCartesian();
+
+                    if (payloadPosition && antennaPosition) {
+                        return [payloadPosition, antennaPosition]; // Line between payload and antenna
+                    } else {
+                        return []; // Empty array if positions are undefined
+                    }
+                }, false), // Recompute the polyline positions on every frame
+                width: 2,
+                material: Color.RED // Customize the color as needed
+            }
+        });
+    }
+
     testpyqtmove(lon: number, lat: number, alt: number) {
         this.droneController?.moveDrone(lon, lat, alt, 10)
     }
@@ -204,8 +231,14 @@ export class CesiumView {
         this.droneController?.setPayloadYaw(degrees)
     }
 
+    onAddAntennaClicked() {
+        const ANTENNA_LONGITUDE = 10.32580470;
+        const ANTENNA_LATITUDE = 55.47177510;
+        const ANTENNA_ALTITUDE = 0;
+        this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
+    }
+
     onAddDroneClicked() {
-        console.log("add drone test")
         const ANTENNA_LONGITUDE = 10.32580470;
         const ANTENNA_LATITUDE = 55.47177510;
         const INITIAL_LONGITUDE = 10.325663942903187;
@@ -221,7 +254,6 @@ export class CesiumView {
         this.drone = new DroneEntity(this.viewer, Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
         const droneEntity = this.drone.getEntity()
         const payloadEntity = this.drone.getPayload()
-        //this.viewer.entities.add(droneEntity);
         if (tracked) {
             this.viewer.trackedEntity = droneEntity;
         }
@@ -241,6 +273,7 @@ export class CesiumView {
         }
         console.log(`CesiumView.ts: Antenna added: ${antennaEntity.id}`)
         this.antennaController.setAntenna(this.antenna.getEntity())
+        //this.mountAntennaToGround()
     }
 
     updatePayloadOrientationToAntenna() {
@@ -282,24 +315,6 @@ export class CesiumView {
         if (this.payloadTrackAntennaCallback && this.viewer) {
             this.viewer.clock.onTick.removeEventListener(this.payloadTrackAntennaCallback);
             this.payloadTrackAntennaCallback = null;
-        }
-    }
-
-    cameraTrackAntenna() {
-        if (!this.viewer) {
-            console.error("Viewer is undefined");
-            return
-        }
-        this.cameraTrackAntennaCallback = () => {
-            this.updateCameraOrientationToAntenna();
-        };
-        this.viewer.clock.onTick.addEventListener(this.cameraTrackAntennaCallback);
-    }
-
-    cameraStopTrackingAntenna() {
-        if (this.cameraTrackAntennaCallback && this.viewer) {
-            this.viewer.clock.onTick.removeEventListener(this.cameraTrackAntennaCallback);
-            this.cameraTrackAntennaCallback = null;
         }
     }
 

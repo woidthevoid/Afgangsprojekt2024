@@ -24,19 +24,25 @@ function setupEventListeners() {
     const addDroneBtn = document.getElementById("addDroneBtn");
     if (addDroneBtn) {
         addDroneBtn.addEventListener('click', () => {
-            view.onAddDroneClicked()
+            view.onAddDroneClicked();
+        });
+    }
+    const addAntennaBtn = document.getElementById("addAntennaBtn");
+    if (addAntennaBtn) {
+        addAntennaBtn.addEventListener('click', () => {
+            view.onAddAntennaClicked();
         });
     }
     const rotateBtn = document.getElementById("rotateBtn");
     if (rotateBtn) {
         rotateBtn.addEventListener('click', () => {
-            view.onRotateClicked()
+            view.onRotateClicked();
         });
     }
     const cancelBtn = document.getElementById("cancelBtn");
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
-            view.onCancelClicked()
+            view.onCancelClicked();
         });
     }
     const rollBtn = document.getElementById("rollBtn");
@@ -45,7 +51,7 @@ function setupEventListeners() {
             const rollInput = document.getElementById("rollInput") as HTMLInputElement;
             if (rollInput) {
                 const roll = parseFloat(rollInput.value);
-                view.setPayloadRoll(roll)
+                view.setPayloadRoll(roll);
             }
         });
     }
@@ -55,7 +61,7 @@ function setupEventListeners() {
             const pitchInput = document.getElementById("pitchInput") as HTMLInputElement;
             if (pitchInput) {
                 const pitch = parseFloat(pitchInput.value);
-                view.setPayloadPitch(pitch)
+                view.setPayloadPitch(pitch);
             }
         });
     }
@@ -65,7 +71,7 @@ function setupEventListeners() {
             const yawInput = document.getElementById("yawInput") as HTMLInputElement;
             if (yawInput) {
                 const yaw = parseFloat(yawInput.value);
-                view.setPayloadYaw(yaw)
+                view.setPayloadYaw(yaw);
             }
         });
     }
@@ -74,10 +80,24 @@ function setupEventListeners() {
         trackAntennaBtn.addEventListener("change", function () {
             if (this.checked) {
                 view.payloadTrackAntenna();
-                //view.cameraTrackAntenna();
+                //view.drawPayloadPointingLine();
             } else {
                 view.payloadStopTrackingAntenna();
-                //view.cameraStopTrackingAntenna();
+            }
+        });
+    }
+
+    const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
+    if (applyCoordinatesBtn) {
+        applyCoordinatesBtn.addEventListener('click', () => {
+            const lonInput = document.getElementById("longitudeInput") as HTMLInputElement;
+            const latInput = document.getElementById("latitudeInput") as HTMLInputElement;
+            const altInput = document.getElementById("altitudeInput") as HTMLInputElement;
+            if (lonInput && latInput && altInput) {
+                const lon = parseFloat(lonInput.value);
+                const lat = parseFloat(latInput.value);
+                const alt = parseFloat(altInput.value);
+                view.droneController.setDronePosition(lon, lat, alt);
             }
         });
     }

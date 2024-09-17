@@ -57,4 +57,12 @@ export class PayloadController {
     updatePayloadRoll(degrees: number) {
         this.applyPayloadRotation(0, 0, degrees); // Roll
     }
+
+    getCurrentPosCartesian() {
+        if (!this.payload) {
+            throw new Error("Drone entity doesn't exist")
+        }
+        const pos = this.payload.position?.getValue(JulianDate.now());
+        return pos
+    }
 }

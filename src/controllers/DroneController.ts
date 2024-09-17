@@ -6,7 +6,7 @@ export class DroneController {
     private viewer: Viewer | null = null;
     private map: CesiumView | null = null;
     private drone: Entity | null = null;
-    private payloadController: PayloadController
+    public payloadController: PayloadController
     //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
 
@@ -155,6 +155,13 @@ export class DroneController {
         `
         )
         this.animationFrameId = requestAnimationFrame(moveEntity);
+    }
+
+    setDronePosition(longitude: number, latitude: number, altitude: number) {
+        if (this.drone) {
+            const newPosition = Cartesian3.fromDegrees(longitude, latitude, altitude)
+            this.drone.position = new ConstantPositionProperty(newPosition);
+        }
     }
 
     cancelMoveDrone() {
