@@ -134,26 +134,26 @@ export class DroneController {
             if (t < 1.0) {
                 this.animationFrameId = requestAnimationFrame(moveEntity);
             } else {
-                console.log(
+                /* console.log(
                 `
                 DroneController: Reached destination:
                 longitude: ${this.getCurrentLongitude()}
                 latitude: ${this.getCurrentLatitude()}
                 altitude: ${this.getCurrentAltitude()}
                 `
-                );
+                ); */
             }
         };
     
         // Start the animation
-        console.log(
+        /* console.log(
         `
         start pos:
         longitude: ${this.getCurrentLongitude()}
         latitude: ${this.getCurrentLatitude()}
         altitude: ${this.getCurrentAltitude()}
         `
-        )
+        ) */
         this.animationFrameId = requestAnimationFrame(moveEntity);
     }
 

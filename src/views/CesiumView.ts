@@ -13,7 +13,10 @@ import {
     Entity,
     CallbackProperty,
     Color,
-    createGooglePhotorealistic3DTileset
+    createGooglePhotorealistic3DTileset,
+    Cartesian2,
+    SceneTransforms,
+    defined
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
@@ -62,8 +65,8 @@ export class CesiumView {
                 terrainProvider: terrainProvider,
                 //globe: false,
                 //skyAtmosphere: new SkyAtmosphere(),
-                requestRenderMode: true,
-                maximumRenderTimeChange: Infinity,
+                //requestRenderMode: true,
+                //maximumRenderTimeChange: Infinity,
                 animation: false,
                 timeline: false,
                 fullscreenButton: false,
@@ -79,7 +82,6 @@ export class CesiumView {
             });
             this.viewer.scene.debugShowFramesPerSecond = true
 
-            createGooglePhotorealistic3DTileset
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
             /* this.viewer.scene.primitives.add(
@@ -98,6 +100,27 @@ export class CesiumView {
                 console.error("Failed to initialize Cesium viewer:", error.message, error.stack);
             } else {
                 console.error("Failed to initialize Cesium viewer:", error);
+            }
+        }
+    }
+
+    updateOverlay() {
+        if (!this.viewer) {
+            return
+        }
+        const canvasPosition = new Cartesian2();
+        const antennaPos = this.antennaController.getCurrentPosCartesian()
+        if (!antennaPos) {
+            return
+        }
+        const windowPosition = SceneTransforms.wgs84ToWindowCoordinates(this.viewer.scene, antennaPos, canvasPosition);
+        
+        if (defined(windowPosition)) {
+            // Set the position of the HTML element based on the canvas position
+            const title = document.getElementById('AUTTitle');
+            if (title) {
+            title.style.left = windowPosition.x + 'px';
+            title.style.top = (windowPosition.y - 50) + 'px'; // Adjust 50 pixels above the entity
             }
         }
     }
@@ -280,6 +303,17 @@ export class CesiumView {
         console.log(`CesiumView.ts: Antenna added: ${antennaEntity.id}`)
         this.antennaController.setAntenna(this.antenna.getEntity())
         //this.mountAntennaToGround()
+    }
+
+    followDrone(follow: boolean) {
+        if (!this.viewer || !this.drone) {
+            return
+        }
+        if (follow) {
+            this.viewer.trackedEntity = this.drone.getEntity()
+        } else {
+            this.viewer.trackedEntity = undefined
+        }
     }
 
     updatePayloadOrientationToAntenna() {

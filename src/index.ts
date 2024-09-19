@@ -79,13 +79,23 @@ function setupEventListeners() {
     if (trackAntennaBtn) {
         trackAntennaBtn.addEventListener("change", function () {
             if (this.checked) {
+                view.drawPayloadPointingLine();
                 view.payloadTrackAntenna();
-                //view.drawPayloadPointingLine();
             } else {
                 view.payloadStopTrackingAntenna();
             }
         });
+    const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
+    if (followDroneBtn) {
+        followDroneBtn.addEventListener("change", function () {
+            if (this.checked) {
+                view.followDrone(true);
+            } else {
+                view.followDrone(false);
+            }
+        });
     }
+}
 
     const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
     if (applyCoordinatesBtn) {
@@ -123,8 +133,16 @@ init();
 
 (window as any).updateDronePosition = function(lon: number, lat: number, alt: number) {
     try {
-        view.droneController.moveDrone(lon, lat, alt, 0.5)
+        view.droneController.moveDrone(lon, lat, alt, 0.5);
     } catch (error) {
-        console.error("Error when trying to update drone position - ", error)
+        console.error("Error when trying to update drone position - ", error);
+    }
+};
+
+(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number) {
+    try {
+        view.antennaController.updatePosition(lon, lat, alt);
+    } catch (error) {
+        console.error("Error when trying to update antenna position - ", error);
     }
 };
