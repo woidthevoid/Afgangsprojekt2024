@@ -16,7 +16,7 @@ export class DroneEntity {
         model: {
           uri: drone2,
           scale: 0.1,
-          //minimumPixelSize: 64,
+          minimumPixelSize: 5,
           //maximumScale: 200,
           heightReference: HeightReference.RELATIVE_TO_GROUND
         },

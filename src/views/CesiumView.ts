@@ -16,12 +16,16 @@ import {
     createGooglePhotorealistic3DTileset,
     Cartesian2,
     SceneTransforms,
-    defined
+    defined,
+    Cesium3DTileset,
+    createWorldImageryAsync,
+    WebMapServiceImageryProvider
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
+import {PlotController} from "../controllers/PlotController"
 
 export class CesiumView {
     private viewer: Viewer | null = null;
@@ -29,15 +33,15 @@ export class CesiumView {
     private antenna: AntennaEntity | null = null;
     private pointingLine: Entity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
-    private cameraTrackAntennaCallback: (() => void) | null = null;
+    plotController: PlotController;
     droneController: DroneController;
     antennaController: AntennaController;
 
     constructor(private containerId: string) {
-        this.droneController = new DroneController()
-        this.antennaController = new AntennaController()
+        this.droneController = new DroneController();
+        this.antennaController = new AntennaController();
+        this.plotController = new PlotController();
         this.payloadTrackAntennaCallback = null;
-        this.cameraTrackAntennaCallback = null;
         this.pointingLine = null;
     }
 
@@ -81,6 +85,9 @@ export class CesiumView {
                 creditContainer: document.createElement('div') // Hide credits
             });
             this.viewer.scene.debugShowFramesPerSecond = true
+            const imageryProvider = await createWorldImageryAsync();
+            this.viewer.imageryLayers.addImageryProvider(imageryProvider);
+            this.plotController.makePlot();
 
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
@@ -104,7 +111,7 @@ export class CesiumView {
         }
     }
 
-    updateOverlay() {
+    /* updateOverlay() {
         if (!this.viewer) {
             return
         }
@@ -113,7 +120,7 @@ export class CesiumView {
         if (!antennaPos) {
             return
         }
-        const windowPosition = SceneTransforms.wgs84ToWindowCoordinates(this.viewer.scene, antennaPos, canvasPosition);
+        const windowPosition = SceneTransforms.worldToWindowCoordinates(this.viewer.scene, antennaPos);
         
         if (defined(windowPosition)) {
             // Set the position of the HTML element based on the canvas position
@@ -122,8 +129,10 @@ export class CesiumView {
             title.style.left = windowPosition.x + 'px';
             title.style.top = (windowPosition.y - 50) + 'px'; // Adjust 50 pixels above the entity
             }
+        } else {
+            console.log("Couldn't apply raster plot");
         }
-    }
+    } */
 
     mountAntennaToGround() {
         if (!this.viewer) {
@@ -346,7 +355,8 @@ export class CesiumView {
             return
         }
         this.payloadTrackAntennaCallback = () => {
-            this.updatePayloadOrientationToAntenna(); 
+            this.updatePayloadOrientationToAntenna();
+            //this.updateOverlay();
         };
         this.viewer.clock.onTick.addEventListener(this.payloadTrackAntennaCallback);
     }

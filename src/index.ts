@@ -8,7 +8,7 @@ const view = new CesiumView('cesiumContainer');
 async function init() {
     try {
         await view.initialize();
-        setupEventListeners()
+        setupEventListeners();
     } catch (error) {
         console.error('An error occurred during initialization:', error);
     }
@@ -79,7 +79,7 @@ function setupEventListeners() {
     if (trackAntennaBtn) {
         trackAntennaBtn.addEventListener("change", function () {
             if (this.checked) {
-                view.drawPayloadPointingLine();
+                //view.drawPayloadPointingLine();
                 view.payloadTrackAntenna();
             } else {
                 view.payloadStopTrackingAntenna();
