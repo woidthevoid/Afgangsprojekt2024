@@ -36,10 +36,6 @@ export class DroneController {
         this.moveDrone(lon, lat, alt, 4)
     }
 
-    onRotateClicked() {
-        //this.payloadController.rotatePayloadBy90Degrees()
-    }
-
     setPayloadRoll(degrees: number) {
         this.payloadController.updatePayloadRoll(degrees)
     }

@@ -33,12 +33,12 @@ function setupEventListeners() {
             view.onAddAntennaClicked();
         });
     }
-    const rotateBtn = document.getElementById("rotateBtn");
+    /* const rotateBtn = document.getElementById("rotateBtn");
     if (rotateBtn) {
         rotateBtn.addEventListener('click', () => {
             view.onRotateClicked();
         });
-    }
+    } */
     const cancelBtn = document.getElementById("cancelBtn");
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
@@ -75,7 +75,7 @@ function setupEventListeners() {
             }
         });
     }
-    const trackAntennaBtn = document.getElementById("trackAntennaBtn") as HTMLInputElement;
+    /* const trackAntennaBtn = document.getElementById("trackAntennaBtn") as HTMLInputElement;
     if (trackAntennaBtn) {
         trackAntennaBtn.addEventListener("change", function () {
             if (this.checked) {
@@ -84,7 +84,7 @@ function setupEventListeners() {
             } else {
                 view.payloadStopTrackingAntenna();
             }
-        });
+        }); */
     const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
@@ -95,7 +95,6 @@ function setupEventListeners() {
             }
         });
     }
-}
 
     const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
     if (applyCoordinatesBtn) {
@@ -113,8 +112,6 @@ function setupEventListeners() {
     }
 }
 
-init();
-
 (window as any).move = function(lon: number, lat: number, alt: number) {
     try {
         view.testpyqtmove(lon, lat, alt);
@@ -128,6 +125,22 @@ init();
         
     } catch (error) {
 
+    }
+};
+
+(window as any).addDrone = function(id: string, lon: number, lat: number, alt: number) {
+    try {
+        view.addDrone(id, lon, lat, alt);
+    } catch (error) {
+        console.error("Error when trying to add drone - ", error);
+    }
+};
+
+(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number) {
+    try {
+        view.addAntenna(id, lon, lat, alt);
+    } catch (error) {
+        console.error("Error when trying to add antenna - ", error);
     }
 };
 
@@ -146,3 +159,5 @@ init();
         console.error("Error when trying to update antenna position - ", error);
     }
 };
+
+init();

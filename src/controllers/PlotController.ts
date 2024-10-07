@@ -1,5 +1,5 @@
+import { interpolateViridis, max, min, scaleSequential, select } from "d3";
 
-import * as d3 from 'd3';
 export class PlotController {
 
     makePlot() {
@@ -11,7 +11,7 @@ export class PlotController {
             [200, 120, 130, 280, 85, 205]
         ];
     
-        var svg = d3.select("svg");
+        var svg = select("svg");
         var width = +svg.attr("width");
         var height = +svg.attr("height");
     
@@ -25,11 +25,11 @@ export class PlotController {
     
         // Flatten the 2D array and calculate min and max values safely
         const flatData = data.flat();
-        const minVal = d3.min(flatData) ?? 0; // Default to 0 if min is undefined
-        const maxVal = d3.max(flatData) ?? 1; // Default to 1 if max is undefined
+        const minVal = min(flatData) ?? 0; // Default to 0 if min is undefined
+        const maxVal = max(flatData) ?? 1; // Default to 1 if max is undefined
     
         // Create a color scale using the safe min and max values
-        var colorScale = d3.scaleSequential(d3.interpolateViridis).domain([minVal, maxVal]);
+        var colorScale = scaleSequential(interpolateViridis).domain([minVal, maxVal]);
     
         // Create the raster plot by adding rects for each cell in the data
         svg.selectAll("rect")
