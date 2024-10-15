@@ -160,4 +160,8 @@ function setupEventListeners() {
     }
 };
 
+(window as any).setFlightPath = function(points: []) {
+
+};
+
 init();

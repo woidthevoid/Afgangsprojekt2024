@@ -12,9 +12,22 @@ interface EntityControllerPair {
 
 export class EntityManager {
   private entityControllerMap: EntityControllerPair[] = [];
+  private flightPathPoints: Entity[] = [];
 
   addEntity(entity: Entity, controller: Controller): void {
     this.entityControllerMap.push({ entity, controller });
+  }
+
+  addPoint(entity: Entity): void {
+    this.flightPathPoints.push(entity);
+  }
+
+  getPoints(): Entity[] {
+    return this.flightPathPoints
+  }
+
+  removePointById(id: string): void {
+    this.flightPathPoints = this.flightPathPoints.filter(point => point.id !== id);
   }
 
   getEntityById(id: string): Entity | undefined {

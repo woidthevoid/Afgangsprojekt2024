@@ -28,6 +28,7 @@ import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
 import {PlotController} from "../controllers/PlotController"
 import { EntityManager } from "../managers/EntityManager";
+import { PointEntity } from "../entities/PointEntity";
 
 export class CesiumView {
     private viewer: Viewer | null = null;
@@ -356,7 +357,8 @@ export class CesiumView {
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 50;
-        this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true)
+        this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
+        this.drawFlightPath();
     }
 
     addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -443,6 +445,36 @@ export class CesiumView {
             this.viewer.clock.onTick.removeEventListener(this.payloadTrackAntennaCallback);
             this.payloadTrackAntennaCallback = null;
         }
+    }
+
+    drawFlightPath() {
+        if (!this.viewer) {
+            return
+        }
+        const INITIAL_LONGITUDE = 10.325663942903187;
+        const INITIAL_LATITUDE = 55.472172681892225;
+        const INITIAL_ALTITUDE = 50;
+        const flightPathPoints = [
+            { longitude: INITIAL_LONGITUDE, latitude: INITIAL_LATITUDE, altitude: INITIAL_ALTITUDE },
+            { longitude: 10.3260, latitude: 55.4725, altitude: 55 },
+            { longitude: 10.3265, latitude: 55.4730, altitude: 60 },
+            { longitude: 10.3270, latitude: 55.4735, altitude: 70 },
+            { longitude: 10.3275, latitude: 55.4740, altitude: 75 }, 
+            { longitude: 10.3280, latitude: 55.4745, altitude: 80 }, 
+            { longitude: 10.3285, latitude: 55.4750, altitude: 85 }
+        ];
+        
+        // Loop through the flight path points and add them to the map
+        flightPathPoints.forEach((point, index) => {
+            const id = index + 1
+            const pointEntity = new PointEntity(
+                `point-${id}`,
+                Cartesian3.fromDegrees(point.longitude, point.latitude, point.altitude),
+            );
+        
+            this.entityManager.addPoint(pointEntity.getEntity())
+            this.viewer?.entities.add(pointEntity.getEntity());
+        });
     }
 
     //helper function to calculate heading from direction vector
