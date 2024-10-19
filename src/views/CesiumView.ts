@@ -31,6 +31,7 @@ import { EntityManager } from "../managers/EntityManager";
 import { PointEntity } from "../entities/PointEntity";
 
 export class CesiumView {
+    private tileset: Cesium3DTileset | null = null;
     private viewer: Viewer | null = null;
     private drone: DroneEntity | null = null;
     private antenna: AntennaEntity | null = null;
@@ -49,6 +50,7 @@ export class CesiumView {
         this.entityManager = new EntityManager();
         this.payloadTrackAntennaCallback = null;
         this.pointingLine = null;
+        this.tileset = null;
     }
 
     async initialize() {
@@ -82,12 +84,12 @@ export class CesiumView {
                 animation: false,
                 timeline: false,
                 fullscreenButton: false,
-                homeButton: false, 
-                infoBox: false, 
-                selectionIndicator: false, 
-                navigationHelpButton: false, 
+                homeButton: false,
+                infoBox: false,
+                //selectionIndicator: false, 
+                //navigationHelpButton: false, 
                 sceneModePicker: false, 
-                geocoder: false, 
+                //geocoder: false, 
                 baseLayerPicker: false, 
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
@@ -100,6 +102,7 @@ export class CesiumView {
 
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
+            //3d tiles
             /* this.viewer.scene.primitives.add(
                 await Cesium3DTileset.fromIonAssetId(2275207),
             ); */
@@ -358,7 +361,12 @@ export class CesiumView {
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 50;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        this.drawFlightPath();
+        const startPoint = [10.325663942903187, 55.472172681892225, 50];
+        const endPoint = [10.3285, 55.4750, 85];
+        const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
+        const longitudes = [10.3260, 10.3265, 10.3270, 10.3275, 10.3280];
+        const altitudes = [55, 60, 70, 75, 80];
+        this.drawFlightPath(startPoint, endPoint, latitudes, longitudes, altitudes);
     }
 
     addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -392,12 +400,38 @@ export class CesiumView {
 
     followDrone(follow: boolean) {
         if (!this.viewer || !this.drone) {
-            return
+            return;
         }
         if (follow) {
-            this.viewer.trackedEntity = this.drone.getEntity()
+            this.viewer.trackedEntity = this.drone.getEntity();
         } else {
-            this.viewer.trackedEntity = undefined
+            this.viewer.trackedEntity = undefined;
+        }
+    }
+
+    async toggle3DTiles(enabled: boolean) {
+        if (!this.viewer) {
+            return;
+        }
+    
+        // If the tileset hasn't been created yet, create and store it
+        if (!this.tileset) {
+            this.tileset = await Cesium3DTileset.fromIonAssetId(2275207);
+        }
+    
+        if (enabled) {
+            // Add the tileset to the scene if it's enabled and not already added
+            if (!this.viewer.scene.primitives.contains(this.tileset)) {
+                this.viewer.scene.primitives.add(this.tileset);
+                console.log("Added 3D tileset");
+            }
+        } else {
+            // Remove the tileset from the scene if it's disabled and currently added
+            if (this.viewer.scene.primitives.contains(this.tileset)) {
+                this.viewer.scene.primitives.remove(this.tileset);
+                this.tileset = null;
+                console.log("Removed 3D tileset");
+            }
         }
     }
 
@@ -447,34 +481,59 @@ export class CesiumView {
         }
     }
 
-    drawFlightPath() {
+    drawFlightPath(
+        startPoint: number[], 
+        endPoint: number[],
+        latitudes: number[], 
+        longitudes: number[], 
+        altitudes: number[]
+    ) {
         if (!this.viewer) {
-            return
+            return;
         }
-        const INITIAL_LONGITUDE = 10.325663942903187;
-        const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 50;
-        const flightPathPoints = [
-            { longitude: INITIAL_LONGITUDE, latitude: INITIAL_LATITUDE, altitude: INITIAL_ALTITUDE },
-            { longitude: 10.3260, latitude: 55.4725, altitude: 55 },
-            { longitude: 10.3265, latitude: 55.4730, altitude: 60 },
-            { longitude: 10.3270, latitude: 55.4735, altitude: 70 },
-            { longitude: 10.3275, latitude: 55.4740, altitude: 75 }, 
-            { longitude: 10.3280, latitude: 55.4745, altitude: 80 }, 
-            { longitude: 10.3285, latitude: 55.4750, altitude: 85 }
-        ];
-        
+    
+        // Validate the lengths of arrays. Must be equal
+        if (latitudes.length !== longitudes.length || latitudes.length !== altitudes.length) {
+            console.error("Couldn't draw points. Latitude, longitude, and altitude arrays must have the same length.");
+            return;
+        }
+    
+        // Draw the start point
+        const startEntity = new PointEntity(
+            'start-point',
+            Cartesian3.fromDegrees(startPoint[0], startPoint[1], startPoint[2]), //lon, lat, alt
+            Color.GREEN,
+            10
+        );
+        this.entityManager.addPoint(startEntity.getEntity());
+        this.viewer.entities.add(startEntity.getEntity());
+    
         // Loop through the flight path points and add them to the map
-        flightPathPoints.forEach((point, index) => {
-            const id = index + 1
+        latitudes.forEach((latitude, index) => {
+            const longitude = longitudes[index];
+            const altitude = altitudes[index];
+    
+            const id = `point-${index + 1}`;
             const pointEntity = new PointEntity(
-                `point-${id}`,
-                Cartesian3.fromDegrees(point.longitude, point.latitude, point.altitude),
+                id,
+                Cartesian3.fromDegrees(longitude, latitude, altitude),
+                Color.BLUE,
+                10
             );
-        
-            this.entityManager.addPoint(pointEntity.getEntity())
+    
+            this.entityManager.addPoint(pointEntity.getEntity());
             this.viewer?.entities.add(pointEntity.getEntity());
         });
+    
+        // Draw the end point
+        const endEntity = new PointEntity(
+            'end-point',
+            Cartesian3.fromDegrees(endPoint[0], endPoint[1], endPoint[2]), //lon, lat, alt
+            Color.RED,
+            10
+        );
+        this.entityManager.addPoint(endEntity.getEntity());
+        this.viewer.entities.add(endEntity.getEntity());
     }
 
     //helper function to calculate heading from direction vector

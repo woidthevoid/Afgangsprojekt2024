@@ -96,6 +96,21 @@ function setupEventListeners() {
         });
     }
 
+    const toggleTilesBtn = document.getElementById("tilesBtn") as HTMLInputElement;
+    if (toggleTilesBtn) {
+        toggleTilesBtn.addEventListener("change", function () {
+            if (this.checked) {
+                view.toggle3DTiles(true);
+            } else {
+                view.toggle3DTiles(false);
+            }
+            toggleTilesBtn.disabled = true;
+            setTimeout(() => {
+                toggleTilesBtn.disabled = false;
+              }, 6000);
+        });
+    }
+
     const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
     if (applyCoordinatesBtn) {
         applyCoordinatesBtn.addEventListener('click', () => {
@@ -160,8 +175,18 @@ function setupEventListeners() {
     }
 };
 
-(window as any).setFlightPath = function(points: []) {
-
+(window as any).setFlightPath = function(
+    startPoint: number[], 
+    endPoint: number[],
+    latitudes: number[], 
+    longitudes: number[], 
+    altitudes: number[]
+) {
+    view.drawFlightPath(startPoint, endPoint, latitudes, longitudes, altitudes);
 };
+
+(window as any).initView = function() {
+    init();
+}
 
 init();
