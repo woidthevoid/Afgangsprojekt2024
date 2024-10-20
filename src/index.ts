@@ -4,6 +4,8 @@ import { CesiumView } from "./views/CesiumView";
 
 (window as any).CESIUM_BASE_URL = '/Cesium/';
 const view = new CesiumView('cesiumContainer');
+let droneAdded = false;
+let antennaAdded = false;
 
 async function init() {
     try {
@@ -160,16 +162,27 @@ function setupEventListeners() {
 };
 
 (window as any).updateDronePosition = function(lon: number, lat: number, alt: number) {
+    const id = "QUADSATDRONE";
     try {
-        view.droneController.moveDrone(lon, lat, alt, 0.5);
+        if (!droneAdded) {
+            droneAdded = true;
+            view.addDrone(id, lon, lat, alt);
+        } else {
+            view.updateDronePos(id, lon, lat, alt);
+        }
     } catch (error) {
         console.error("Error when trying to update drone position - ", error);
     }
 };
 
 (window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number) {
+    const id = "QUADSATANTENNA"
     try {
-        view.antennaController.updatePosition(lon, lat, alt);
+        if (!antennaAdded) {
+            antennaAdded = true
+            view.addAntenna(id, lon, lat, alt);
+        }
+        view.updateAntennaPos(id, lon, lat, alt);
     } catch (error) {
         console.error("Error when trying to update antenna position - ", error);
     }
