@@ -66,16 +66,7 @@ export class CesiumView {
         Ion.defaultAccessToken = process.env.CESIUM_ION_TOKEN || '';
     
         try {
-            const INITIAL_LONGITUDE = 10.325663942903187;
-            const INITIAL_LATITUDE = 55.472172681892225;
-            const INITIAL_ALTITUDE = 100;
-
-            const ANTENNA_LONGITUDE = 10.32580470;
-            const ANTENNA_LATITUDE = 55.47177510;
-            const ANTENNA_ALTITUDE = 0;
-            
             console.log("Initializing Cesium viewer...");
-            
             const terrainProvider = await createWorldTerrainAsync();
             this.viewer = new Viewer(this.containerId, {
                 terrainProvider: terrainProvider,
@@ -114,13 +105,11 @@ export class CesiumView {
             console.log("Cesium viewer initialized");
             this.droneController?.setViewer(this.viewer);
 
-            //this.addAntenna(ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE, false);
-            //this.mountAntennaToGround()
-            //this.addAntenna2("test-id", ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE)
-            /* this.addAntenna("test-antenna1", ANTENNA_LONGITUDE, ANTENNA_LATITUDE, ANTENNA_ALTITUDE);
-            this.addDrone("test-drone1", INITIAL_LONGITUDE + 0.001, INITIAL_LATITUDE, INITIAL_ALTITUDE); */
-
-            //this.testFlightData();
+            /* const timestamps = [1633024800, 1633024900, 1633025000, 1633025100, 1633025200];
+            const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
+            const longitudes = [10.3260, 10.3265, 10.3270, 10.3275, 10.3280];
+            const altitudes = [50, 55, 60, 65, 70];
+            this.createFlightPathFromData(timestamps, longitudes, latitudes, altitudes); */
         } catch (error) {
             // Log full error details
             if (error instanceof Error) {
@@ -129,31 +118,6 @@ export class CesiumView {
                 console.error("Failed to initialize Cesium viewer:", error);
             }
         }
-    }
-
-    testFlightData() {
-        if (!this.viewer) {
-            return
-        }
-        const flightData: FlightDataPoint[] = [
-            { time: 1633024800, latitude: 55.4725, longitude: 10.3260, altitude: 50 },
-            { time: 1633024900, latitude: 55.4730, longitude: 10.3265, altitude: 55 },
-            { time: 1633025000, latitude: 55.4735, longitude: 10.3270, altitude: 60 },
-            { time: 1633025100, latitude: 55.4740, longitude: 10.3275, altitude: 65 },
-            { time: 1633025200, latitude: 55.4745, longitude: 10.3280, altitude: 70 }
-        ];
-        const testEntity = this.viewer.entities.add({
-            name: "test",
-            point: {
-                pixelSize: 10,
-                color: Color.RED,
-                outlineColor: Color.WHITE,
-                outlineWidth: 2,
-                heightReference: HeightReference.RELATIVE_TO_GROUND,
-            },
-            position: new SampledPositionProperty(),  // Position will be updated dynamically
-        });
-        this.createFlightPathFromData(flightData, testEntity);
     }
 
     /* updateOverlay() {
@@ -386,18 +350,10 @@ export class CesiumView {
     }
 
     onAddDroneClicked() {
-        const ANTENNA_LONGITUDE = 10.32580470;
-        const ANTENNA_LATITUDE = 55.47177510;
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 50;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        const startPoint = [10.325663942903187, 55.472172681892225, 50];
-        const endPoint = [10.3285, 55.4750, 85];
-        const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
-        const longitudes = [10.3260, 10.3265, 10.3270, 10.3275, 10.3280];
-        const altitudes = [55, 60, 70, 75, 80];
-        //this.drawFlightPath(startPoint, endPoint, latitudes, longitudes, altitudes);
     }
 
     addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -567,33 +523,61 @@ export class CesiumView {
         this.viewer.entities.add(endEntity.getEntity());
     }
 
-    createFlightPathFromData(flightData: FlightDataPoint[], entity: Entity) {
+    createFlightPathFromData(
+        timestamps: number[],  // Array of UNIX timestamps
+        longitudes: number[],  // Array of longitudes in degrees
+        latitudes: number[],   // Array of latitudes in degrees
+        altitudes: number[],   // Array of altitudes in meters
+    ) {
         if (!this.viewer) {
-            return
+            return;
         }
-        this.viewer.trackedEntity = entity
-        this.viewer.clock.shouldAnimate = true;
-        const positionProperty = new SampledPositionProperty();
-        flightData.forEach(point => {
-            const time = JulianDate.fromDate(new Date(point.time * 1000));  // Convert UNIX time to Julian Date
-            const position = Cartesian3.fromDegrees(point.longitude, point.latitude, point.altitude);
-            positionProperty.addSample(time, position);
+    
+        // Make sure the four arrays are of the same length
+        if (timestamps.length !== latitudes.length || timestamps.length !== longitudes.length || timestamps.length !== altitudes.length) {
+            console.error("The arrays for time, latitude, longitude, and altitude must have the same length.");
+            return;
+        }
+
+        const droneEntity = this.viewer.entities.add({
+            name: "test",
+            point: {
+                pixelSize: 10,
+                color: Color.RED,
+                outlineColor: Color.WHITE,
+                outlineWidth: 2,
+                heightReference: HeightReference.RELATIVE_TO_GROUND,
+            },
+            position: new SampledPositionProperty(),  // Position will be updated dynamically
         });
-
-        // Assign the position property to the drone entity
-        entity.position = positionProperty;
-
-        // Set the start and stop time based on the first and last points in the data
-        const startTime = JulianDate.fromDate(new Date(flightData[0].time * 1000));
-        const endTime = JulianDate.fromDate(new Date(flightData[flightData.length - 1].time * 1000));
+    
+        this.viewer.trackedEntity = droneEntity;
+        this.viewer.clock.shouldAnimate = true;
+    
+        // Create a SampledPositionProperty to hold the positions over time
+        const positionProperty = new SampledPositionProperty();
+    
+        // Loop through the arrays and add each sample to the position property
+        for (let i = 0; i < timestamps.length; i++) {
+            const time = JulianDate.fromDate(new Date(timestamps[i] * 1000));  // Convert UNIX time to JulianDate
+            const position = Cartesian3.fromDegrees(longitudes[i], latitudes[i], altitudes[i]);
+            positionProperty.addSample(time, position);  // Add the time and position sample
+        }
+    
+        // Assign the position property to the entity
+        droneEntity.position = positionProperty;
+    
+        // Set the clock time range based on the first and last times in the arrays
+        const startTime = JulianDate.fromDate(new Date(timestamps[0] * 1000));
+        const endTime = JulianDate.fromDate(new Date(timestamps[timestamps.length - 1] * 1000));
         this.viewer.clock.startTime = startTime.clone();
         this.viewer.clock.stopTime = endTime.clone();
         this.viewer.clock.currentTime = startTime.clone();
         this.viewer.clock.clockRange = ClockRange.LOOP_STOP;  // Loop at the end of the flight
         this.viewer.clock.multiplier = 10;
-        
-        // Fly to the drone's start position
-        const startPosition = entity.position.getValue(startTime);
+    
+        // Fly to the entity's starting position
+        const startPosition = droneEntity.position.getValue(startTime);
         if (startPosition) {
             this.viewer.camera.flyTo({
                 destination: startPosition,
@@ -602,7 +586,7 @@ export class CesiumView {
                     pitch: CesiumMath.toRadians(-45),
                     roll: 0,
                 },
-                duration: 0.1
+                duration: 2
             });
         }
     }
@@ -622,14 +606,6 @@ export class CesiumView {
 
     getViewerInstance(): Viewer | null {
         return this.viewer;
-    }
-
-    getDroneInstance(): DroneEntity | null {
-        return this.drone;
-    }
-
-    getAntennaInstance(): AntennaEntity | null {
-        return this.antenna;
     }
 
     destroy() {

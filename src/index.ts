@@ -198,6 +198,15 @@ function setupEventListeners() {
     view.drawFlightPath(startPoint, endPoint, latitudes, longitudes, altitudes);
 };
 
+(window as any).flyRoute = function(
+    timestamps: number[],
+    longitudes: number[],
+    latitudes: number[],
+    altitudes: number[],
+) {
+    view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
+};
+
 (window as any).initView = function() {
     init();
 }
