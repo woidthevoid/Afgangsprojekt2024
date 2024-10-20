@@ -91,7 +91,7 @@ export class CesiumView {
                 homeButton: false,
                 infoBox: false,
                 //selectionIndicator: false, 
-                //navigationHelpButton: false, 
+                navigationHelpButton: false, 
                 sceneModePicker: false, 
                 //geocoder: false, 
                 baseLayerPicker: false, 
