@@ -6,7 +6,7 @@ export class DroneController {
     private viewer: Viewer | null = null;
     private map: CesiumView | null = null;
     private drone: Entity | null = null;
-    private payloadController: PayloadController
+    public payloadController: PayloadController
     //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
 
@@ -34,10 +34,6 @@ export class DroneController {
         const lat = this.generatenewCoords(this.getCurrentLatitude());
         const alt = 100;
         this.moveDrone(lon, lat, alt, 4)
-    }
-
-    onRotateClicked() {
-        //this.payloadController.rotatePayloadBy90Degrees()
     }
 
     setPayloadRoll(degrees: number) {
@@ -134,27 +130,34 @@ export class DroneController {
             if (t < 1.0) {
                 this.animationFrameId = requestAnimationFrame(moveEntity);
             } else {
-                console.log(
+                /* console.log(
                 `
                 DroneController: Reached destination:
                 longitude: ${this.getCurrentLongitude()}
                 latitude: ${this.getCurrentLatitude()}
                 altitude: ${this.getCurrentAltitude()}
                 `
-                );
+                ); */
             }
         };
     
         // Start the animation
-        console.log(
+        /* console.log(
         `
         start pos:
         longitude: ${this.getCurrentLongitude()}
         latitude: ${this.getCurrentLatitude()}
         altitude: ${this.getCurrentAltitude()}
         `
-        )
+        ) */
         this.animationFrameId = requestAnimationFrame(moveEntity);
+    }
+
+    setDronePosition(longitude: number, latitude: number, altitude: number) {
+        if (this.drone) {
+            const newPosition = Cartesian3.fromDegrees(longitude, latitude, altitude)
+            this.drone.position = new ConstantPositionProperty(newPosition);
+        }
     }
 
     cancelMoveDrone() {

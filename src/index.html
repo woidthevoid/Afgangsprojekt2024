@@ -9,11 +9,13 @@
     <div class="button-container">
         <button id="moveBtn">Move</button>
         <button id="cancelBtn">Stop</button>
-        <button id="resetBtn">Reset position</button>
+        <!-- <button id="resetBtn">Reset position</button> -->
         <button id="addDroneBtn">Add drone</button>
-        <button id="rotateBtn">Rotate payload</button>
+        <button id="addAntennaBtn">Add antenna</button>
+        <!-- <button id="rotateBtn">Rotate payload</button> -->
     </div>
-    <div id="controls">
+    <div class="controls">
+        <!-- 
         <label for="rollInput">Roll (X-axis):</label>
         <input type="number" id="rollInput" value="0">
         <button id="rollBtn">Apply Roll</button>
@@ -27,11 +29,36 @@
         <label for="yawInput">Yaw (Z-axis):</label>
         <input type="number" id="yawInput" value="0">
         <button id="yawBtn">Apply Yaw</button>
+        <br> -->
+
+        <!-- <input type="checkbox" id="trackAntennaBtn">
+        <label>Track antenna</label>
+        <br> -->
+        <input type="checkbox" id="tilesBtn">
+        <label>3D Tiles</label>
+        <br>
+        <input type="checkbox" id="followDroneBtn" checked>
+        <label>Follow Drone</label>
+        <br>
         <br>
 
-        <input type="checkbox" id="trackAntennaBtn">
-        <label>Track antenna</label>
+        <label for="longitudeInput">Longitude:</label>
+        <input type="number" id="longitudeInput" value="10.32595470">
         <br>
+        
+        <label for="latitudeInput">Latitude:</label>
+        <input type="number" id="latitudeInput" value="55.47177510">
+        <br>
+
+        <label for="altitudeInput">Altitude:</label>
+        <input type="number" id="altitudeInput" value="50">
+        <br>
+
+        <button id="applyCoordinatesBtn">Apply coordinates</button>
+    </div>
+    <!-- <div id="AUTTitle" style="position: absolute;">aut</div> -->
+    <div id="plotContainer">
+        <svg width="300" height="200"></svg> <!-- SVG container for D3 chart -->
     </div>
     <div id="cesiumContainer"></div>
 </body>

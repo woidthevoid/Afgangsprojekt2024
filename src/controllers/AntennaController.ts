@@ -1,4 +1,4 @@
-import { Entity, JulianDate } from "cesium";
+import { Cartesian3, ConstantPositionProperty, Entity, JulianDate } from "cesium";
 
 
 export class AntennaController {
@@ -15,5 +15,14 @@ export class AntennaController {
         }
         const pos = this.antenna.position?.getValue(JulianDate.now());
         return pos
+    }
+
+    updatePosition(longitude: number, latitude: number, altitude: number) {
+        if (!this.antenna) {
+            return
+        }
+        const newPosition = Cartesian3.fromDegrees(longitude, latitude, altitude);
+        this.antenna.position = new ConstantPositionProperty(newPosition)
+        console.log("antenna moved to ", longitude, latitude, altitude)
     }
 }
