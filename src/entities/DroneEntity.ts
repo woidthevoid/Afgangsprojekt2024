@@ -72,4 +72,4 @@ export class DroneEntity {
     getPayload(): Entity {
       return this.payload;
     }
-  }
+}

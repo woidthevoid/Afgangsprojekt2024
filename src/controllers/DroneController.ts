@@ -1,22 +1,21 @@
-import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty } from "cesium";
-import { CesiumView } from "../views/CesiumView";
+import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty, Color } from "cesium";
 import { PayloadController } from "./PayloadController";
+import { FlightPath } from "../flight/FlightPath";
 
 export class DroneController {
     private viewer: Viewer | null = null;
-    private map: CesiumView | null = null;
     private drone: Entity | null = null;
     public payloadController: PayloadController
-    //private positionProperty: SampledPositionProperty;
     private animationFrameId: number | null = null;
+    private flightPath: FlightPath | null = null;
 
     constructor() {
         this.payloadController = new PayloadController();
-        this.animationFrameId;
     }
 
     setViewer(viewer: Viewer) {
         this.viewer = viewer;
+        this.flightPath = new FlightPath(viewer);
         console.log("DroneController.ts: viewer has been set");
     }
 
@@ -29,11 +28,15 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
+    testline(lon: number, lat: number, alt: number, power: number) {
+        this.moveDrone(lon, lat, alt, 0.5, power);
+    }
+
     onMoveClicked() {
         const lon = this.generatenewCoords(this.getCurrentLongitude());
         const lat = this.generatenewCoords(this.getCurrentLatitude());
         const alt = 100;
-        this.moveDrone(lon, lat, alt, 4)
+        this.moveDrone(lon, lat, alt, 4);
     }
 
     setPayloadRoll(degrees: number) {
@@ -98,7 +101,7 @@ export class DroneController {
         //this.positionProperty.addSample(JulianDate.now(), this.currentPosition);
     } */
 
-    moveDrone(longitude: number, latitude: number, altitude: number, duration: number) {
+    moveDrone(longitude: number, latitude: number, altitude: number, duration: number, power: number | null = null) {
         if (!this.drone) {
             console.warn("DroneController: No drone to move.");
             return;
@@ -129,7 +132,7 @@ export class DroneController {
     
             if (t < 1.0) {
                 this.animationFrameId = requestAnimationFrame(moveEntity);
-            } else {
+            } else if (power && this.flightPath) {
                 /* console.log(
                 `
                 DroneController: Reached destination:
@@ -138,6 +141,10 @@ export class DroneController {
                 altitude: ${this.getCurrentAltitude()}
                 `
                 ); */
+                const color = this.getColorForPower(power);
+                // To compensate for droneEntity (heightReference: HeightReference.RELATIVE_TO_GROUND)
+                altitude += 54.5;
+                this.flightPath.update(longitude, latitude, altitude, color);
             }
         };
     
@@ -151,6 +158,11 @@ export class DroneController {
         `
         ) */
         this.animationFrameId = requestAnimationFrame(moveEntity);
+    }
+
+    getColorForPower(power: number): Color {
+        const normalizedPower = power / 100;
+        return Color.fromHsl((1 - normalizedPower) * 0.66, 1.0, 0.5);
     }
 
     setDronePosition(longitude: number, latitude: number, altitude: number) {
