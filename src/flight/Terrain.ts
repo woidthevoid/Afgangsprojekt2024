@@ -18,10 +18,8 @@ export class Terrain {
 
         // If cache is valid and within the tolerance range, return it
         if (cached && now - cached.timestamp < this.cacheDuration) {
-            console.log("hit cache")
             return cached.height;
         }
-        console.log("didnt hit cache")
 
         // Otherwise, sample the terrain
         const terrainHeight = await this.sampleTerrain(lon, lat);

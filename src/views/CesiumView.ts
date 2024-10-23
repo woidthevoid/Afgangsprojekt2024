@@ -632,9 +632,17 @@ export class CesiumView {
     }
 
     startDroneSimulation() {
+        //hca
         let longitude = 10.3260;
         let latitude = 55.4725;
         let altitude = 50;
+
+        //chile
+        /* let longitude = -70.6014607699504;
+        let latitude = -28.491158255396414;
+        let altitude = 50; */
+
+
     
         let direction = 1; // Controls the direction of horizontal movement (1 for forward, -1 for backward)
         let movingHorizontally = true; // True when moving horizontally, false when moving down

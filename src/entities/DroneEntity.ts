@@ -1,6 +1,7 @@
 import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
 import drone from "../assets/drone.glb";
 import drone2 from "../assets/drone2.glb"
+import drone3 from "../assets/drone3.glb"
 import dronepayload from "../assets/dronepayload.glb"
 import dronepayload2 from "../assets/dronepayload2.glb"
 import antenna from "../assets/antenna.glb"
@@ -20,7 +21,7 @@ export class DroneEntity {
         id: this.id,
         position: position,
         model: {
-          uri: drone2,
+          uri: drone3,
           scale: 0.1,
           minimumPixelSize: 15,
           //maximumScale: 200,
