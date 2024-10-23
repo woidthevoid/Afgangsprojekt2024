@@ -13,7 +13,7 @@ export class FlightPath {
         this.viewer = viewer;
     }
 
-    async update(lon: number, lat: number, alt: number, color: Color, width: number = 5) {
+    public async update(lon: number, lat: number, alt: number, color: Color, width: number = 5) {
         const terrainHeight = await this.terrain.getTerrainHeight(lon, lat);
         const actualAlt = terrainHeight + alt;
         const newPosition = Cartesian3.fromDegrees(lon, lat, actualAlt);
@@ -55,5 +55,12 @@ export class FlightPath {
         });
 
         this.viewer.scene.primitives.add(this.primitive);
+    }
+
+    public removeFlightPath() {
+        if (this.primitive) {
+            this.viewer.scene.primitives.remove(this.primitive);
+            console.log("removed flight path")
+        }
     }
 }

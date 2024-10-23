@@ -28,6 +28,13 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
+    drawFlightPath (lon: number, lat: number, alt: number) {
+        const color = Color.BLUE
+        setTimeout(() => {
+            this.flightPath?.update(lon, lat, alt, color, 3);
+        }, 600);
+    }
+
     testline(lon: number, lat: number, alt: number, power: number) {
         const color = this.getColorForPower(power);
         const animationTime = 0.5

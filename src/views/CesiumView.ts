@@ -303,7 +303,7 @@ export class CesiumView {
         console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
     }
 
-    updateDronePos(id: string, lon: number, lat: number, alt: number) {
+    updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: boolean = false) {
         if (!this.viewer) {
             console.error("Viewer is null");
         }
@@ -311,6 +311,9 @@ export class CesiumView {
             const drone = this.entityManager.getControllerByEntityId(id);
             if (drone instanceof DroneController) {
                 drone.moveDrone(lon, lat, alt, 0.5);
+                if (flightPathEnabled) {
+                    drone.drawFlightPath(lon, lat, alt);
+                }
             }
         } catch (error) {
             console.error("Failed to update drone position - ", error)
@@ -527,6 +530,13 @@ export class CesiumView {
         );
         this.entityManager.addPoint(endEntity.getEntity());
         this.viewer.entities.add(endEntity.getEntity());
+    }
+
+    removeAllFlightPathPoints() {
+        this.entityManager.getPoints().forEach(point => {
+            this.viewer?.entities.remove(point);
+        });
+        this.entityManager.removeAllPoints();
     }
 
     createFlightPathFromData(

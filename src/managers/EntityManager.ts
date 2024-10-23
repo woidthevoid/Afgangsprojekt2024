@@ -1,8 +1,9 @@
+import { Entity } from "cesium";
 import { AntennaController } from "../controllers/AntennaController";
 import { DroneController } from "../controllers/DroneController";
 import { BaseEntity } from "../entities/BaseEntity";
 
-type Entity = BaseEntity;
+//type Entity = BaseEntity;
 type Controller = AntennaController | DroneController;
 
 interface EntityControllerPair {
@@ -28,6 +29,10 @@ export class EntityManager {
 
   removePointById(id: string): void {
     this.flightPathPoints = this.flightPathPoints.filter(point => point.id !== id);
+  }
+
+  removeAllPoints() {
+    this.flightPathPoints = [];
   }
 
   getEntityById(id: string): Entity | undefined {
