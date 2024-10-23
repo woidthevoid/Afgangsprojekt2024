@@ -1,8 +1,18 @@
-import { ConstantProperty, Entity, HeadingPitchRoll, JulianDate, Quaternion, Math as CesiumMath } from "cesium";
+import { ConstantProperty, Entity, HeadingPitchRoll, JulianDate, Quaternion, Math as CesiumMath, Viewer } from "cesium";
+import { PointingLine } from "../flight/PointingLine";
 
 export class PayloadController {
     private payload: Entity | null = null
+    private viewer: Viewer | null = null
+    private pointingLine: PointingLine | null = null;
     constructor() {}
+
+    setViewer(viewer: Viewer) {
+        this.viewer = viewer;
+        if (this.payload) {
+            //this.pointingLine = new PointingLine(viewer, this.payload);
+        }
+    }
 
     setPayload(payload: Entity) {
         console.log("PayloadController.ts: payload has been set");

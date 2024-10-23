@@ -296,6 +296,7 @@ export class CesiumView {
         droneController.setDrone(droneEntity)
         droneController.setPayload(payloadEntity)
         droneController.setViewer(this.viewer)
+        droneController.payloadController.setViewer(this.viewer)
         this.viewer.trackedEntity = droneEntity;
         this.entityManager.addEntity(droneEntity, droneController)
         this.payloadTrackAntenna(id);
@@ -309,7 +310,7 @@ export class CesiumView {
         try {
             const drone = this.entityManager.getControllerByEntityId(id);
             if (drone instanceof DroneController) {
-                //drone.moveDrone(lon, lat, alt, 0.5);
+                drone.moveDrone(lon, lat, alt, 0.5);
             }
         } catch (error) {
             console.error("Failed to update drone position - ", error)
@@ -317,7 +318,7 @@ export class CesiumView {
     }
    
     testpyqtmove(lon: number, lat: number, alt: number) {
-        //this.droneController?.moveDrone(lon, lat, alt, 10)
+        this.droneController?.moveDrone(lon, lat, alt, 10)
     }
 
     onMoveClicked() {
@@ -356,7 +357,7 @@ export class CesiumView {
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 50;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        //this.startDroneSimulation();
+        this.startDroneSimulation();
     }
 
     addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -372,6 +373,7 @@ export class CesiumView {
         console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
         this.droneController?.setDrone(droneEntity)
         this.droneController?.setPayload(payloadEntity)
+        this.droneController?.payloadController.setViewer(this.viewer)
         this.droneController?.setViewer(this.viewer)
     }
 

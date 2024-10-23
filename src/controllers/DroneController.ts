@@ -5,7 +5,7 @@ import { FlightPath } from "../flight/FlightPath";
 export class DroneController {
     private viewer: Viewer | null = null;
     private drone: Entity | null = null;
-    public payloadController: PayloadController
+    public payloadController: PayloadController;
     private animationFrameId: number | null = null;
     private flightPath: FlightPath | null = null;
 
@@ -29,7 +29,12 @@ export class DroneController {
     }
 
     testline(lon: number, lat: number, alt: number, power: number) {
-        this.moveDrone(lon, lat, alt, 0.5, power);
+        const color = this.getColorForPower(power);
+        const animationTime = 0.5
+        setTimeout(() => {
+        this.flightPath?.update(lon, lat, alt, color, 4);
+    }, animationTime * 1000 + 100);
+        this.moveDrone(lon, lat, alt, animationTime);
     }
 
     onMoveClicked() {
@@ -101,7 +106,7 @@ export class DroneController {
         //this.positionProperty.addSample(JulianDate.now(), this.currentPosition);
     } */
 
-    moveDrone(longitude: number, latitude: number, altitude: number, duration: number, power: number | null = null) {
+    moveDrone(longitude: number, latitude: number, altitude: number, duration: number) {
         if (!this.drone) {
             console.warn("DroneController: No drone to move.");
             return;
@@ -132,19 +137,8 @@ export class DroneController {
     
             if (t < 1.0) {
                 this.animationFrameId = requestAnimationFrame(moveEntity);
-            } else if (power && this.flightPath) {
-                /* console.log(
-                `
-                DroneController: Reached destination:
-                longitude: ${this.getCurrentLongitude()}
-                latitude: ${this.getCurrentLatitude()}
-                altitude: ${this.getCurrentAltitude()}
-                `
-                ); */
-                const color = this.getColorForPower(power);
-                // To compensate for droneEntity (heightReference: HeightReference.RELATIVE_TO_GROUND)
-                altitude += 54.5;
-                this.flightPath.update(longitude, latitude, altitude, color);
+            } else {
+                // Finished flight animation
             }
         };
     
