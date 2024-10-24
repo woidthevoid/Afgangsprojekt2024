@@ -161,14 +161,15 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateDronePosition = function(lon: number, lat: number, alt: number, flightPath: boolean = false) {
+(window as any).updateDronePosition = function(lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+    //flightPathEnabled: "enabled" || "disabled"
     const id = "QUADSATDRONE";
     try {
         if (!droneAdded) {
             droneAdded = true;
             view.addDrone(id, lon, lat, alt);
         } else {
-            view.updateDronePos(id, lon, lat, alt, flightPath);
+            view.updateDronePos(id, lon, lat, alt, flightPathEnabled);
         }
     } catch (error) {
         console.error("Error when trying to update drone position - ", error);
@@ -215,4 +216,4 @@ function setupEventListeners() {
     init();
 }
 
-init();
+//init();

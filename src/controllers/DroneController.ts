@@ -39,8 +39,8 @@ export class DroneController {
         const color = this.getColorForPower(power);
         const animationTime = 0.5
         setTimeout(() => {
-        this.flightPath?.update(lon, lat, alt, color, 4);
-    }, animationTime * 1000 + 100);
+            this.flightPath?.update(lon, lat, alt, color, 4);
+        }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }
 
