@@ -1,12 +1,12 @@
-import { Cartographic, sampleTerrainMostDetailed, Viewer, Math as CesiumMath } from "cesium";
+//import { Cartographic, sampleTerrainMostDetailed, Viewer, Math as CesiumMath } from "cesium";
 
 export class Terrain {
-    private viewer: Viewer;
+    private viewer: any;
     private terrainCache: Map<string, { lon: number, lat: number, height: number, timestamp: number }> = new Map();  // Cache with coordinates
     private cacheDuration: number = 5 * 60 * 1000;  // Cache expiration time in milliseconds (default 5 minutes)
     private cacheTolerance: number = 0.00003;  // Tolerance for latitude/longitude comparison (~2 meters)
 
-    constructor(viewer: Viewer) {
+    constructor(viewer: any) {
         this.viewer = viewer;
     }
 
@@ -31,8 +31,8 @@ export class Terrain {
     }
 
     private async sampleTerrain(lon: number, lat: number): Promise<number> {
-        const cartographicPosition = Cartographic.fromDegrees(lon, lat);
-        const terrainSample = await sampleTerrainMostDetailed(this.viewer.terrainProvider, [cartographicPosition]);
+        const cartographicPosition = Cesium.Cartographic.fromDegrees(lon, lat);
+        const terrainSample = await Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, [cartographicPosition]);
 
         if (!terrainSample || !terrainSample[0]) {
             console.error("Failed to sample terrain.");
@@ -81,7 +81,7 @@ export class Terrain {
         } else {
             // Convert meters to degrees
             const latTolerance = meters / 111320;  // Latitude tolerance (degrees)
-            const lonTolerance = meters / (111320 * Math.cos(CesiumMath.toRadians(latitude)));  // Longitude tolerance (degrees)
+            const lonTolerance = meters / (111320 * Math.cos(Cesium.Math.toRadians(latitude)));  // Longitude tolerance (degrees)
             
             // Use the larger tolerance for both lat/lon
             this.cacheTolerance = Math.max(latTolerance, lonTolerance);

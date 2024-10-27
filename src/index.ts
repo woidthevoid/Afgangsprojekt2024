@@ -9,7 +9,6 @@ let antennaAdded = false;
 
 async function init() {
     try {
-        console.log(typeof Cesium)
         await view.initialize();
     } catch (error) {
         console.error('An error occurred during initialization:', error);
@@ -18,11 +17,17 @@ async function init() {
 
 function setupEventListeners() {
 
+    const testBtn = document.getElementById("testBtn");
+    if (testBtn) {
+        testBtn.addEventListener('click', () => {
+            init();
+        });
+    }
+
     const addDroneBtn = document.getElementById("addDroneBtn");
     if (addDroneBtn) {
         addDroneBtn.addEventListener('click', () => {
-            init();
-            //view.onAddDroneClicked();
+            view.onAddDroneClicked();
         });
     }
 
@@ -197,12 +202,13 @@ function setupEventListeners() {
     view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
 };
 
-/* (window as any).initView = function() {
+(window as any).initView = function() {
     init();
-} */
+}
 
 //_______________TESTING_______________//
-setupEventListeners()
+//init();
+setupEventListeners();
 
 //setTimeout(testMove, 5000);
 

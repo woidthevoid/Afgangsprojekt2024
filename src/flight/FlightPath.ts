@@ -1,25 +1,25 @@
-import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
+//import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
 import { Terrain } from "./Terrain";
 
 export class FlightPath {
-    private viewer: Viewer;
+    private viewer: any;
     private terrain: Terrain;
-    private livePathPositions: Cartesian3[] = [];
-    private livePathColors: Color[] = [];
-    private livePathPrimitive: Primitive | null = null;
-    private determinedPathEntity: Entity | null = null;
-    private determinedStartPoint: Entity | null = null;
-    private determinedEndPoint: Entity | null = null;
+    private livePathPositions: any[] = [];
+    private livePathColors: any[] = [];
+    private livePathPrimitive: any | null = null;
+    private determinedPathEntity: any | null = null;
+    private determinedStartPoint: any | null = null;
+    private determinedEndPoint: any | null = null;
 
-    constructor(viewer: Viewer) {
+    constructor(viewer: any) {
         this.terrain = new Terrain(viewer);
         this.viewer = viewer;
     }
 
-    public async updateLivePath(lon: number, lat: number, alt: number, color: Color) {
+    public async updateLivePath(lon: number, lat: number, alt: number, color: any) {
         const terrainHeight = await this.terrain.getTerrainHeight(lon, lat);
         const actualAlt = terrainHeight + alt;
-        const newPosition = Cartesian3.fromDegrees(lon, lat, actualAlt);
+        const newPosition = Cesium.Cartesian3.fromDegrees(lon, lat, actualAlt);
         // Add the new position and color to the arrays
         this.livePathPositions.push(newPosition);
         this.livePathColors.push(color);
@@ -39,25 +39,25 @@ export class FlightPath {
         if (!this.viewer) {
             return
         }
-        const geometry = new PolylineGeometry({
+        const geometry = new Cesium.PolylineGeometry({
             positions: this.livePathPositions,
-            vertexFormat: PolylineColorAppearance.VERTEX_FORMAT,
+            vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
             colors: this.livePathColors,
             colorsPerVertex: true,
             width: 3.5
         });
 
-        const geometryInstance = new GeometryInstance({
+        const geometryInstance = new Cesium.GeometryInstance({
             geometry: geometry,
         });
 
-        this.livePathPrimitive = new Primitive({
+        this.livePathPrimitive = new Cesium.Primitive({
             geometryInstances: geometryInstance,
-            appearance: new PolylineColorAppearance({
+            appearance: new Cesium.PolylineColorAppearance({
                 translucent: false // Ensures the path is solid and not impacted by paths underneath
             }),
             asynchronous: false,
-            depthFailAppearance: new PolylineColorAppearance({ // Add depthFailAppearance for handling overlap
+            depthFailAppearance: new Cesium.PolylineColorAppearance({ // Add depthFailAppearance for handling overlap
                 translucent: false,
             })
         });
@@ -102,15 +102,15 @@ export class FlightPath {
         );
 
         const positions = lons.map((longitude, index) => 
-            Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
+            Cesium.Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
         );
 
         // Add determined path to view
         this.determinedPathEntity = this.viewer.entities.add({
-            polyline: new PolylineGraphics({
+            polyline: new Cesium.PolylineGraphics({
                 positions: positions,
                 width: 1,
-                material: Color.ORANGE.withAlpha(0.4),
+                material: Cesium.Color.ORANGE.withAlpha(0.4),
                 clampToGround: false,
             })
         });
@@ -118,9 +118,9 @@ export class FlightPath {
         // Add starting point to view
         this.determinedStartPoint = this.viewer.entities.add({
             id: 'start-point-determined-path',
-            position: Cartesian3.fromDegrees(lons[0], lats[0], correctedAlts[0]),
+            position: Cesium.Cartesian3.fromDegrees(lons[0], lats[0], correctedAlts[0]),
             point: {
-                color: Color.GREEN,
+                color: Cesium.Color.GREEN,
                 pixelSize: 10,
             }
         });
@@ -128,9 +128,9 @@ export class FlightPath {
         // Add end point to view
         this.determinedEndPoint = this.viewer.entities.add({
             id: 'end-point-determined-path',
-            position: Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], correctedAlts[correctedAlts.length - 1]),
+            position: Cesium.Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], correctedAlts[correctedAlts.length - 1]),
             point: {
-                color: Color.RED,
+                color: Cesium.Color.RED,
                 pixelSize: 10
             }
         });
