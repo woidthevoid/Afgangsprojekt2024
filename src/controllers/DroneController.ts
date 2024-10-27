@@ -1,22 +1,21 @@
-import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty } from "cesium";
-import { CesiumView } from "../views/CesiumView";
+import { Viewer, Cartesian3, Entity, Cartographic, JulianDate, Math as CesiumMath, ConstantPositionProperty, Color } from "cesium";
 import { PayloadController } from "./PayloadController";
+import { FlightPath } from "../flight/FlightPath";
 
 export class DroneController {
     private viewer: Viewer | null = null;
-    private map: CesiumView | null = null;
     private drone: Entity | null = null;
-    public payloadController: PayloadController
-    //private positionProperty: SampledPositionProperty;
+    public payloadController: PayloadController;
     private animationFrameId: number | null = null;
+    private flightPath: FlightPath | null = null;
 
     constructor() {
         this.payloadController = new PayloadController();
-        this.animationFrameId;
     }
 
     setViewer(viewer: Viewer) {
         this.viewer = viewer;
+        this.flightPath = new FlightPath(viewer);
         console.log("DroneController.ts: viewer has been set");
     }
 
@@ -29,11 +28,39 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
+    drawLiveFlightPath (lon: number, lat: number, alt: number) {
+        const color = Color.BLUE
+        setTimeout(() => {
+            this.flightPath?.updateLivePath(lon, lat, alt, color);
+        }, 600);
+    }
+
+    setDeterminedFlightPath(lons: number[], lats: number[], alts: number[]) {
+        this.flightPath?.updateDeterminedPath(lons, lats, alts);
+    }
+
+    removeLivePath() {
+        this.flightPath?.removeLivePath();
+    }
+
+    removeDeterminedFlightPath() {
+        this.flightPath?.removeDeterminedPath();
+    }
+
+    testline(lon: number, lat: number, alt: number, power: number) {
+        const color = this.getColorForPower(power);
+        const animationTime = 0.5
+        setTimeout(() => {
+        this.flightPath?.updateLivePath(lon, lat, alt, color);
+    }, animationTime * 1000 + 100);
+        this.moveDrone(lon, lat, alt, animationTime);
+    }
+
     onMoveClicked() {
         const lon = this.generatenewCoords(this.getCurrentLongitude());
         const lat = this.generatenewCoords(this.getCurrentLatitude());
         const alt = 100;
-        this.moveDrone(lon, lat, alt, 4)
+        this.moveDrone(lon, lat, alt, 4);
     }
 
     setPayloadRoll(degrees: number) {
@@ -130,14 +157,7 @@ export class DroneController {
             if (t < 1.0) {
                 this.animationFrameId = requestAnimationFrame(moveEntity);
             } else {
-                /* console.log(
-                `
-                DroneController: Reached destination:
-                longitude: ${this.getCurrentLongitude()}
-                latitude: ${this.getCurrentLatitude()}
-                altitude: ${this.getCurrentAltitude()}
-                `
-                ); */
+                // Finished flight animation
             }
         };
     
@@ -151,6 +171,11 @@ export class DroneController {
         `
         ) */
         this.animationFrameId = requestAnimationFrame(moveEntity);
+    }
+
+    getColorForPower(power: number): Color {
+        const normalizedPower = power / 100;
+        return Color.fromHsl((1 - normalizedPower) * 0.66, 1.0, 0.5);
     }
 
     setDronePosition(longitude: number, latitude: number, altitude: number) {

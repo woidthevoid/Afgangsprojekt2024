@@ -23,9 +23,12 @@ import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
-import {PlotController} from "../controllers/PlotController"
 import { EntityManager } from "../managers/EntityManager";
 import { PointEntity } from "../entities/PointEntity";
+
+function getRandomPower(): number {
+    return Math.floor(Math.random() * 101);  // Generate a random integer between 0 and 100
+}
 
 interface FlightDataPoint {
     time: number;       // UNIX timestamp (seconds since epoch)
@@ -41,7 +44,6 @@ export class CesiumView {
     private antenna: AntennaEntity | null = null;
     private pointingLine: Entity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
-    plotController: PlotController;
     droneController: DroneController;
     antennaController: AntennaController;
     entityManager: EntityManager;
@@ -50,7 +52,6 @@ export class CesiumView {
     constructor(private containerId: string) {
         this.droneController = new DroneController();
         this.antennaController = new AntennaController();
-        this.plotController = new PlotController();
         this.entityManager = new EntityManager();
         this.payloadTrackAntennaCallback = null;
         this.pointingLine = null;
@@ -81,10 +82,10 @@ export class CesiumView {
                 fullscreenButton: false,
                 homeButton: false,
                 infoBox: false,
-                //selectionIndicator: false, 
+                selectionIndicator: false, 
                 navigationHelpButton: false, 
                 sceneModePicker: false, 
-                //geocoder: false, 
+                geocoder: false, 
                 baseLayerPicker: false, 
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
@@ -93,7 +94,6 @@ export class CesiumView {
             const imageryProvider = await createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
             //this.viewer.scene.backgroundColor = Color.BLACK;
-            this.plotController.makePlot();
 
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
@@ -103,7 +103,7 @@ export class CesiumView {
             ); */
             
             console.log("Cesium viewer initialized");
-            this.droneController?.setViewer(this.viewer);
+            //this.droneController?.setViewer(this.viewer);
 
             /* const timestamps = [1633024800, 1633024900, 1633025000, 1633025100, 1633025200];
             const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
@@ -118,55 +118,6 @@ export class CesiumView {
                 console.error("Failed to initialize Cesium viewer:", error);
             }
         }
-    }
-
-    /* updateOverlay() {
-        if (!this.viewer) {
-            return
-        }
-        const canvasPosition = new Cartesian2();
-        const antennaPos = this.antennaController.getCurrentPosCartesian()
-        if (!antennaPos) {
-            return
-        }
-        const windowPosition = SceneTransforms.worldToWindowCoordinates(this.viewer.scene, antennaPos);
-        
-        if (defined(windowPosition)) {
-            // Set the position of the HTML element based on the canvas position
-            const title = document.getElementById('AUTTitle');
-            if (title) {
-            title.style.left = windowPosition.x + 'px';
-            title.style.top = (windowPosition.y - 50) + 'px'; // Adjust 50 pixels above the entity
-            }
-        } else {
-            console.log("Couldn't apply raster plot");
-        }
-    } */
-
-    mountAntennaToGround() {
-        if (!this.viewer) {
-            return;
-        }
-        const terrainProvider = this.viewer.terrainProvider;
-        const antennaPosition = this.antennaController.getCurrentPosCartesian();
-        if (!antennaPosition) {
-            return;
-        }
-        const cartographicPosition = Cartographic.fromCartesian(antennaPosition);
-        sampleTerrainMostDetailed(terrainProvider, [cartographicPosition])
-            .then((updatedPositions) => {
-                const height = updatedPositions[0].height;
-                // Update the antenna position with the correct height
-                const groundPosition = Cartesian3.fromDegrees(
-                    CesiumMath.toDegrees(cartographicPosition.longitude),
-                    CesiumMath.toDegrees(cartographicPosition.latitude),
-                    height
-                );
-                this.antenna?.setPos(groundPosition) // Update entity position to the ground height
-            })
-            .catch((error) => {
-                console.error("Failed to sample terrain height:", error);
-            });
     }
 
     updateCameraOrientationToAntenna2() {
@@ -294,13 +245,15 @@ export class CesiumView {
         const payloadEntity = drone.getPayload()
         droneController.setDrone(droneEntity)
         droneController.setPayload(payloadEntity)
+        droneController.setViewer(this.viewer)
+        droneController.payloadController.setViewer(this.viewer)
         this.viewer.trackedEntity = droneEntity;
         this.entityManager.addEntity(droneEntity, droneController)
         this.payloadTrackAntenna(id);
         console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
     }
 
-    updateDronePos(id: string, lon: number, lat: number, alt: number) {
+    updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
         if (!this.viewer) {
             console.error("Viewer is null");
         }
@@ -308,6 +261,9 @@ export class CesiumView {
             const drone = this.entityManager.getControllerByEntityId(id);
             if (drone instanceof DroneController) {
                 drone.moveDrone(lon, lat, alt, 0.5);
+                if (flightPathEnabled == "enabled") {
+                    drone.drawLiveFlightPath(lon, lat, alt);
+                }
             }
         } catch (error) {
             console.error("Failed to update drone position - ", error)
@@ -354,6 +310,7 @@ export class CesiumView {
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 50;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
+        this.startDroneSimulation();
     }
 
     addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -369,6 +326,8 @@ export class CesiumView {
         console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
         this.droneController?.setDrone(droneEntity)
         this.droneController?.setPayload(payloadEntity)
+        this.droneController?.payloadController.setViewer(this.viewer)
+        this.droneController?.setViewer(this.viewer)
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -385,12 +344,13 @@ export class CesiumView {
         //this.mountAntennaToGround()
     }
 
-    followDrone(follow: boolean) {
-        if (!this.viewer || !this.drone) {
+    followDrone(drone_id: string, follow: boolean) {
+        if (!this.viewer) {
             return;
         }
         if (follow) {
-            this.viewer.trackedEntity = this.drone.getEntity();
+            const drone = this.entityManager.getEntityById(drone_id);
+            this.viewer.trackedEntity = drone;
         } else {
             this.viewer.trackedEntity = undefined;
         }
@@ -403,6 +363,7 @@ export class CesiumView {
     
         // If the tileset hasn't been created yet, create and store it
         if (!this.tileset) {
+            // "Google photorealistic 3D tileset"
             this.tileset = await Cesium3DTileset.fromIonAssetId(2275207);
         }
     
@@ -466,61 +427,6 @@ export class CesiumView {
             this.viewer.clock.onTick.removeEventListener(this.payloadTrackAntennaCallback);
             this.payloadTrackAntennaCallback = null;
         }
-    }
-
-    drawFlightPath(
-        startPoint: number[], 
-        endPoint: number[],
-        latitudes: number[], 
-        longitudes: number[], 
-        altitudes: number[]
-    ) {
-        if (!this.viewer) {
-            return;
-        }
-    
-        // Validate the lengths of arrays. Must be equal
-        if (latitudes.length !== longitudes.length || latitudes.length !== altitudes.length) {
-            console.error("Couldn't draw points. Latitude, longitude, and altitude arrays must have the same length.");
-            return;
-        }
-    
-        // Draw the start point
-        const startEntity = new PointEntity(
-            'start-point',
-            Cartesian3.fromDegrees(startPoint[0], startPoint[1], startPoint[2]), //lon, lat, alt
-            Color.GREEN,
-            10
-        );
-        this.entityManager.addPoint(startEntity.getEntity());
-        this.viewer.entities.add(startEntity.getEntity());
-    
-        // Loop through the flight path points and add them to the map
-        latitudes.forEach((latitude, index) => {
-            const longitude = longitudes[index];
-            const altitude = altitudes[index];
-    
-            const id = `point-${index + 1}`;
-            const pointEntity = new PointEntity(
-                id,
-                Cartesian3.fromDegrees(longitude, latitude, altitude),
-                Color.BLUE,
-                10
-            );
-    
-            this.entityManager.addPoint(pointEntity.getEntity());
-            this.viewer?.entities.add(pointEntity.getEntity());
-        });
-    
-        // Draw the end point
-        const endEntity = new PointEntity(
-            'end-point',
-            Cartesian3.fromDegrees(endPoint[0], endPoint[1], endPoint[2]), //lon, lat, alt
-            Color.RED,
-            10
-        );
-        this.entityManager.addPoint(endEntity.getEntity());
-        this.viewer.entities.add(endEntity.getEntity());
     }
 
     createFlightPathFromData(
@@ -591,6 +497,31 @@ export class CesiumView {
         }
     }
 
+    drawDeterminedFlightPath(drone_id: string, lons: number[], lats: number[], alts: number[]) {
+        try {
+            const drone = this.entityManager.getControllerByEntityId(drone_id);
+            if (drone instanceof DroneController) {
+                drone.setDeterminedFlightPath(lons, lats, alts);
+            }
+        } catch (error) {
+            console.error("Failed to draw flight path - ", error)
+        }
+    }
+
+    removeLiveFlightPath(drone_id: string) {
+        const drone = this.entityManager.getControllerByEntityId(drone_id);
+        if(drone instanceof DroneController) {
+            drone.removeLivePath();
+        }
+    }
+
+    removeDeterminedFlightPath(drone_id: string) {
+        const drone = this.entityManager.getControllerByEntityId(drone_id);
+        if(drone instanceof DroneController) {
+            drone.removeDeterminedFlightPath();
+        }
+    }
+
     //helper function to calculate heading from direction vector
     calculateHeading(fromPosition: Cartesian3, toPosition: Cartesian3): number {
         const direction = Cartesian3.subtract(toPosition, fromPosition, new Cartesian3());
@@ -613,5 +544,58 @@ export class CesiumView {
             this.viewer.destroy();
             this.viewer = null;
         }
+    }
+
+    startDroneSimulation() {
+        //hca
+        let longitude = 10.3260;
+        let latitude = 55.4725;
+        let altitude = 50;
+
+        //chile
+        /* let longitude = -70.6014607699504;
+        let latitude = -28.491158255396414;
+        let altitude = 50; */
+
+
+    
+        let direction = 1; // Controls the direction of horizontal movement (1 for forward, -1 for backward)
+        let movingHorizontally = true; // True when moving horizontally, false when moving down
+        let movementDuration = 0; // Time counter for how long it's been moving in the current direction
+    
+        const intervalId = setInterval(() => {
+            const power = getRandomPower(); // Generate random power between 0 and 100
+    
+            if (movingHorizontally) {
+                // Move horizontally (forward or backward) for 5 seconds
+                if (movementDuration < 5000) {
+                    longitude += direction * 0.000005;  // Change in longitude
+                    latitude += direction * 0.000005;   // Change in latitude
+                } else {
+                    // After 5 seconds, switch to vertical movement (down)
+                    movingHorizontally = false;
+                    movementDuration = 0;  // Reset the duration timer
+                }
+            } else {
+                // Move vertically (down) for 1 second
+                if (movementDuration < 1000) {
+                    altitude -= 0.2;  // Decrease altitude to simulate going down
+                } else {
+                    // After 1 second, switch back to horizontal movement
+                    movingHorizontally = true;
+                    movementDuration = 0;  // Reset the duration timer
+    
+                    // Reverse direction when going back
+                    direction *= -1;  // Switch between forward and backward
+                }
+            }
+    
+            // Call the method that updates the drone position and polyline with the new values
+            this.droneController.testline(longitude, latitude, altitude, power);
+    
+            // Update the movement duration timer
+            movementDuration += 200; // Increase by the interval time (200ms)
+    
+        }, 200); // Update every 200 milliseconds
     }
 }
