@@ -12,7 +12,7 @@ export class AntennaEntity implements BaseEntity {
             id: this.id,
             position: position,
             model: {
-                uri: qsantenna,
+                uri: "qrc:/map3d/LiveMap3D/assets/qsantenna.glb",
                 scale: 0.8,
                 minimumPixelSize: 25,
                 //maximumScale: 200,
