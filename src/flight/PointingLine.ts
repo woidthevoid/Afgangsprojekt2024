@@ -11,10 +11,10 @@ export class PointingLine {
     constructor(viewer: Viewer, entity: Entity, lineLength: number = 1000) {
         this.viewer = viewer;
         this.entity = entity;
-        this.lineLength = lineLength;  // Length of the line representing the pointing direction
+        this.lineLength = lineLength;
         this.terrain = new Terrain(viewer);
 
-        // Create the polyline as an Entity (using PolylineGraphics with dynamic position updates)
+        // Create the polyline as an Entity
         this.createPolyline();
     }
 
@@ -23,8 +23,8 @@ export class PointingLine {
         this.pointingLineEntity = this.viewer.entities.add({
             polyline: new PolylineGraphics({
                 positions: new CallbackProperty(() => this.getLinePositions(), false), // Update positions dynamically
-                width: 2.0,  // Line thickness in pixels
-                material: Color.YELLOW,  // Line color
+                width: 2.0,
+                material: Color.YELLOW,
             })
         });
     }
@@ -33,10 +33,9 @@ export class PointingLine {
         const entityPosition = this.entity.position?.getValue(JulianDate.now());
         const orientation = this.entity.orientation?.getValue(JulianDate.now());
 
-        // Ensure the entity position and orientation are valid
         if (!entityPosition || !orientation) {
             console.error('Invalid entity position or orientation');
-            return [];  // Return an empty array if position or orientation is not available
+            return [];
         }
 
         // Convert entity position to cartographic (to get latitude, longitude, and height)
@@ -59,20 +58,18 @@ export class PointingLine {
             alt = terrainHeight + cartographic.height;
         }
 
-        // Correct the position with the calculated altitude
         const correctedEntityPosition = Cartesian3.fromDegrees(
             CesiumMath.toDegrees(cartographic.longitude),
             CesiumMath.toDegrees(cartographic.latitude),
             alt
         );
 
-        // Ensure the corrected position is valid
         if (!this.isValidCartesian3(correctedEntityPosition)) {
             console.error('Invalid corrected entity position');
-            return [];  // Return an empty array if the corrected position is invalid
+            return [];
         }
 
-        // Get the direction the entity is facing (based on its orientation quaternion)
+        // Get the direction the entity is facing
         const rotationMatrix = Matrix3.fromQuaternion(orientation, new Matrix3());
 
         // Assuming the +X axis is forward
@@ -82,16 +79,13 @@ export class PointingLine {
         // Extend the direction vector by the specified line length
         const scaledDirection = Cartesian3.multiplyByScalar(direction, this.lineLength, new Cartesian3());
 
-        // Calculate the end point of the line
         const endPoint = Cartesian3.add(correctedEntityPosition, scaledDirection, new Cartesian3());
 
-        // Ensure the end point is valid
         if (!this.isValidCartesian3(endPoint)) {
             console.error('Invalid end point');
-            return [];  // Return an empty array if the end point is invalid
+            return [];
         }
 
-        // Return the positions for the polyline (start at entity, end at calculated direction)
         return [correctedEntityPosition, endPoint];
     }
 
@@ -101,8 +95,6 @@ export class PointingLine {
             console.error("Pointing line entity not initialized.");
             return;
         }
-
-        // CallbackProperty automatically handles the position updates, so we just trigger a render
         this.viewer.scene.requestRender();
     }
 

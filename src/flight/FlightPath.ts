@@ -1,66 +1,139 @@
-import { Cartesian3, Color, GeometryInstance, PolylineColorAppearance, PolylineGeometry, Primitive, Viewer } from "cesium";
+import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer, Math as CesiumMath, Cartographic, HeightReference, ColorMaterialProperty, PolylineMaterialAppearance, Material } from "cesium";
 import { Terrain } from "./Terrain";
+import { PointEntity } from "../entities/PointEntity";
 
 export class FlightPath {
     private viewer: Viewer;
     private terrain: Terrain;
-    private positions: Cartesian3[] = [];
-    private colors: Color[] = [];
-    private primitive: Primitive | null = null;
+    private livePathPositions: Cartesian3[] = [];
+    private livePathColors: Color[] = [];
+    private livePathPrimitive: Primitive | null = null;
+    private determinedPathEntity: Entity | null = null;
+    private determinedStartPoint: Entity | null = null;
+    private determinedEndPoint: Entity | null = null;
 
     constructor(viewer: Viewer) {
         this.terrain = new Terrain(viewer);
         this.viewer = viewer;
     }
 
-    public async update(lon: number, lat: number, alt: number, color: Color, width: number = 5) {
+    public async updateLivePath(lon: number, lat: number, alt: number, color: Color) {
         const terrainHeight = await this.terrain.getTerrainHeight(lon, lat);
         const actualAlt = terrainHeight + alt;
         const newPosition = Cartesian3.fromDegrees(lon, lat, actualAlt);
         // Add the new position and color to the arrays
-        this.positions.push(newPosition);
-        this.colors.push(color);
+        this.livePathPositions.push(newPosition);
+        this.livePathColors.push(color);
 
         // If the primitive exists, remove it before creating the updated one
-        if (this.primitive) {
-            this.viewer.scene.primitives.remove(this.primitive);
+        if (this.livePathPrimitive) {
+            this.viewer.scene.primitives.remove(this.livePathPrimitive);
         }
 
         // Create a new primitive with updated geometry
-        if (this.positions.length > 1) {
-            this.createPrimitive(width);
+        if (this.livePathPositions.length > 1) {
+            this.createLivePathPrimitive();
         }
     }
 
-    private createPrimitive(width: number = 5) {
+    private createLivePathPrimitive() {
         if (!this.viewer) {
             return
         }
         const geometry = new PolylineGeometry({
-            positions: this.positions,
+            positions: this.livePathPositions,
             vertexFormat: PolylineColorAppearance.VERTEX_FORMAT,
-            colors: this.colors,
+            colors: this.livePathColors,
             colorsPerVertex: true,
-            width: width
+            width: 3.5
         });
 
         const geometryInstance = new GeometryInstance({
             geometry: geometry,
         });
 
-        this.primitive = new Primitive({
+        this.livePathPrimitive = new Primitive({
             geometryInstances: geometryInstance,
-            appearance: new PolylineColorAppearance(),
-            asynchronous: false
+            appearance: new PolylineColorAppearance({
+                translucent: false // Ensures the path is solid and not impacted by paths underneath
+            }),
+            asynchronous: false,
+            depthFailAppearance: new PolylineColorAppearance({ // Add depthFailAppearance for handling overlap
+                translucent: false,
+            })
         });
 
-        this.viewer.scene.primitives.add(this.primitive);
+        this.viewer.scene.primitives.add(this.livePathPrimitive);
     }
 
-    public removeFlightPath() {
-        if (this.primitive) {
-            this.viewer.scene.primitives.remove(this.primitive);
-            console.log("removed flight path")
+    public removeLivePath() {
+        if (this.livePathPrimitive) {
+            this.viewer.scene.primitives.remove(this.livePathPrimitive);
         }
+    }
+
+    public removeDeterminedPath() {
+        const pathEntities = [this.determinedPathEntity, this.determinedStartPoint, this.determinedEndPoint];
+        pathEntities.forEach(entity => {
+            if (entity) {
+                this.viewer.entities.remove(entity);
+            }
+        });
+    }
+
+    public async updateDeterminedPath(lons: number[], lats: number[], alts: number[]) {
+        if (lons.length !== lats.length || lats.length !== alts.length) {
+            return null;
+        }
+        
+        // Remove the entities if they already exist
+        const pathEntities = [this.determinedPathEntity, this.determinedStartPoint, this.determinedEndPoint];
+        pathEntities.forEach(entity => {
+            if (entity) {
+                this.viewer.entities.remove(entity);
+            }
+        });
+
+        const correctedAlts = await Promise.all(
+            alts.map(async (altitude, i) => {
+                const terrainHeight = await this.terrain.getTerrainHeight(lons[i], lats[i]);
+                const updatedAltitude = terrainHeight + altitude;
+                return updatedAltitude;
+            })
+        );
+
+        const positions = lons.map((longitude, index) => 
+            Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
+        );
+
+        // Add determined path to view
+        this.determinedPathEntity = this.viewer.entities.add({
+            polyline: new PolylineGraphics({
+                positions: positions,
+                width: 1,
+                material: Color.ORANGE.withAlpha(0.4),
+                clampToGround: false,
+            })
+        });
+
+        // Add starting point to view
+        this.determinedStartPoint = this.viewer.entities.add({
+            id: 'start-point-determined-path',
+            position: Cartesian3.fromDegrees(lons[0], lats[0], correctedAlts[0]),
+            point: {
+                color: Color.GREEN,
+                pixelSize: 10,
+            }
+        });
+
+        // Add end point to view
+        this.determinedEndPoint = this.viewer.entities.add({
+            id: 'end-point-determined-path',
+            position: Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], correctedAlts[correctedAlts.length - 1]),
+            point: {
+                color: Color.RED,
+                pixelSize: 10
+            }
+        });
     }
 }

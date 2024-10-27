@@ -1,6 +1,4 @@
 import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
-import drone3 from "../assets/drone3.glb"
-import camera from "../assets/camera.glb"
 import qsdrone from "../assets/qsdrone.glb"
 import qspayload from "../assets/qspayload.glb"
 

@@ -28,19 +28,31 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
-    drawFlightPath (lon: number, lat: number, alt: number) {
+    drawLiveFlightPath (lon: number, lat: number, alt: number) {
         const color = Color.BLUE
         setTimeout(() => {
-            this.flightPath?.update(lon, lat, alt, color, 3);
+            this.flightPath?.updateLivePath(lon, lat, alt, color);
         }, 600);
+    }
+
+    setDeterminedFlightPath(lons: number[], lats: number[], alts: number[]) {
+        this.flightPath?.updateDeterminedPath(lons, lats, alts);
+    }
+
+    removeLivePath() {
+        this.flightPath?.removeLivePath();
+    }
+
+    removeDeterminedFlightPath() {
+        this.flightPath?.removeDeterminedPath();
     }
 
     testline(lon: number, lat: number, alt: number, power: number) {
         const color = this.getColorForPower(power);
         const animationTime = 0.5
         setTimeout(() => {
-            this.flightPath?.update(lon, lat, alt, color, 4);
-        }, animationTime * 1000 + 100);
+        this.flightPath?.updateLivePath(lon, lat, alt, color);
+    }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }
 

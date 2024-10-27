@@ -1,6 +1,5 @@
-import {Entity, Cartesian3, Color, ConstantPositionProperty, HeightReference, LabelStyle, VerticalOrigin, Cartesian2} from "cesium";
+import {Entity, Cartesian3, ConstantPositionProperty, HeightReference} from "cesium";
 import { BaseEntity } from "./BaseEntity";
-import antenna from "../assets/antenna.glb";
 import qsantenna from "../assets/qsantenna.glb"
 
 export class AntennaEntity implements BaseEntity {

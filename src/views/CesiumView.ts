@@ -94,7 +94,6 @@ export class CesiumView {
             const imageryProvider = await createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
             //this.viewer.scene.backgroundColor = Color.BLACK;
-            //this.plotController.makePlot();
 
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
@@ -104,7 +103,7 @@ export class CesiumView {
             ); */
             
             console.log("Cesium viewer initialized");
-            this.droneController?.setViewer(this.viewer);
+            //this.droneController?.setViewer(this.viewer);
 
             /* const timestamps = [1633024800, 1633024900, 1633025000, 1633025100, 1633025200];
             const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
@@ -119,55 +118,6 @@ export class CesiumView {
                 console.error("Failed to initialize Cesium viewer:", error);
             }
         }
-    }
-
-    /* updateOverlay() {
-        if (!this.viewer) {
-            return
-        }
-        const canvasPosition = new Cartesian2();
-        const antennaPos = this.antennaController.getCurrentPosCartesian()
-        if (!antennaPos) {
-            return
-        }
-        const windowPosition = SceneTransforms.worldToWindowCoordinates(this.viewer.scene, antennaPos);
-        
-        if (defined(windowPosition)) {
-            // Set the position of the HTML element based on the canvas position
-            const title = document.getElementById('AUTTitle');
-            if (title) {
-            title.style.left = windowPosition.x + 'px';
-            title.style.top = (windowPosition.y - 50) + 'px'; // Adjust 50 pixels above the entity
-            }
-        } else {
-            console.log("Couldn't apply raster plot");
-        }
-    } */
-
-    mountAntennaToGround() {
-        if (!this.viewer) {
-            return;
-        }
-        const terrainProvider = this.viewer.terrainProvider;
-        const antennaPosition = this.antennaController.getCurrentPosCartesian();
-        if (!antennaPosition) {
-            return;
-        }
-        const cartographicPosition = Cartographic.fromCartesian(antennaPosition);
-        sampleTerrainMostDetailed(terrainProvider, [cartographicPosition])
-            .then((updatedPositions) => {
-                const height = updatedPositions[0].height;
-                // Update the antenna position with the correct height
-                const groundPosition = Cartesian3.fromDegrees(
-                    CesiumMath.toDegrees(cartographicPosition.longitude),
-                    CesiumMath.toDegrees(cartographicPosition.latitude),
-                    height
-                );
-                this.antenna?.setPos(groundPosition) // Update entity position to the ground height
-            })
-            .catch((error) => {
-                console.error("Failed to sample terrain height:", error);
-            });
     }
 
     updateCameraOrientationToAntenna2() {
@@ -311,8 +261,8 @@ export class CesiumView {
             const drone = this.entityManager.getControllerByEntityId(id);
             if (drone instanceof DroneController) {
                 drone.moveDrone(lon, lat, alt, 0.5);
-                if (flightPathEnabled === "enabled") {
-                    drone.drawFlightPath(lon, lat, alt);
+                if (flightPathEnabled) {
+                    drone.drawLiveFlightPath(lon, lat, alt);
                 }
             }
         } catch (error) {
@@ -394,12 +344,13 @@ export class CesiumView {
         //this.mountAntennaToGround()
     }
 
-    followDrone(follow: boolean) {
-        if (!this.viewer || !this.drone) {
+    followDrone(drone_id: string, follow: boolean) {
+        if (!this.viewer) {
             return;
         }
         if (follow) {
-            this.viewer.trackedEntity = this.drone.getEntity();
+            const drone = this.entityManager.getEntityById(drone_id);
+            this.viewer.trackedEntity = drone;
         } else {
             this.viewer.trackedEntity = undefined;
         }
@@ -412,6 +363,7 @@ export class CesiumView {
     
         // If the tileset hasn't been created yet, create and store it
         if (!this.tileset) {
+            // "Google photorealistic 3D tileset"
             this.tileset = await Cesium3DTileset.fromIonAssetId(2275207);
         }
     
@@ -475,68 +427,6 @@ export class CesiumView {
             this.viewer.clock.onTick.removeEventListener(this.payloadTrackAntennaCallback);
             this.payloadTrackAntennaCallback = null;
         }
-    }
-
-    drawFlightPath(
-        startPoint: number[], 
-        endPoint: number[],
-        latitudes: number[], 
-        longitudes: number[], 
-        altitudes: number[]
-    ) {
-        if (!this.viewer) {
-            return;
-        }
-    
-        // Validate the lengths of arrays. Must be equal
-        if (latitudes.length !== longitudes.length || latitudes.length !== altitudes.length) {
-            console.error("Couldn't draw points. Latitude, longitude, and altitude arrays must have the same length.");
-            return;
-        }
-    
-        // Draw the start point
-        const startEntity = new PointEntity(
-            'start-point',
-            Cartesian3.fromDegrees(startPoint[0], startPoint[1], startPoint[2]), //lon, lat, alt
-            Color.GREEN,
-            10
-        );
-        this.entityManager.addPoint(startEntity.getEntity());
-        this.viewer.entities.add(startEntity.getEntity());
-    
-        // Loop through the flight path points and add them to the map
-        latitudes.forEach((latitude, index) => {
-            const longitude = longitudes[index];
-            const altitude = altitudes[index];
-    
-            const id = `point-${index + 1}`;
-            const pointEntity = new PointEntity(
-                id,
-                Cartesian3.fromDegrees(longitude, latitude, altitude),
-                Color.BLUE,
-                10
-            );
-    
-            this.entityManager.addPoint(pointEntity.getEntity());
-            this.viewer?.entities.add(pointEntity.getEntity());
-        });
-    
-        // Draw the end point
-        const endEntity = new PointEntity(
-            'end-point',
-            Cartesian3.fromDegrees(endPoint[0], endPoint[1], endPoint[2]), //lon, lat, alt
-            Color.RED,
-            10
-        );
-        this.entityManager.addPoint(endEntity.getEntity());
-        this.viewer.entities.add(endEntity.getEntity());
-    }
-
-    removeAllFlightPathPoints() {
-        this.entityManager.getPoints().forEach(point => {
-            this.viewer?.entities.remove(point);
-        });
-        this.entityManager.removeAllPoints();
     }
 
     createFlightPathFromData(
@@ -604,6 +494,31 @@ export class CesiumView {
                 },
                 duration: 2
             });
+        }
+    }
+
+    drawDeterminedFlightPath(drone_id: string, lons: number[], lats: number[], alts: number[]) {
+        try {
+            const drone = this.entityManager.getControllerByEntityId(drone_id);
+            if (drone instanceof DroneController) {
+                drone.setDeterminedFlightPath(lons, lats, alts);
+            }
+        } catch (error) {
+            console.error("Failed to draw flight path - ", error)
+        }
+    }
+
+    removeLiveFlightPath(drone_id: string) {
+        const drone = this.entityManager.getControllerByEntityId(drone_id);
+        if(drone instanceof DroneController) {
+            drone.removeLivePath();
+        }
+    }
+
+    removeDeterminedFlightPath(drone_id: string) {
+        const drone = this.entityManager.getControllerByEntityId(drone_id);
+        if(drone instanceof DroneController) {
+            drone.removeDeterminedFlightPath();
         }
     }
 
