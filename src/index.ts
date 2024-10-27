@@ -17,36 +17,21 @@ async function init() {
 }
 
 function setupEventListeners() {
-    const moveBtn = document.getElementById('moveBtn');
-    if (moveBtn) {
-        moveBtn.addEventListener('click', () => {
-            view.onMoveClicked();
-        });
-    }
+
     const addDroneBtn = document.getElementById("addDroneBtn");
     if (addDroneBtn) {
         addDroneBtn.addEventListener('click', () => {
             view.onAddDroneClicked();
         });
     }
+
     const addAntennaBtn = document.getElementById("addAntennaBtn");
     if (addAntennaBtn) {
         addAntennaBtn.addEventListener('click', () => {
             view.onAddAntennaClicked();
         });
     }
-    /* const rotateBtn = document.getElementById("rotateBtn");
-    if (rotateBtn) {
-        rotateBtn.addEventListener('click', () => {
-            view.onRotateClicked();
-        });
-    } */
-    const cancelBtn = document.getElementById("cancelBtn");
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            view.onCancelClicked();
-        });
-    }
+
     const rollBtn = document.getElementById("rollBtn");
     if (rollBtn) {
         rollBtn.addEventListener('click', () => {
@@ -57,6 +42,7 @@ function setupEventListeners() {
             }
         });
     }
+
     const pitchBtn = document.getElementById("pitchBtn");
     if (pitchBtn) {
         pitchBtn.addEventListener('click', () => {
@@ -67,6 +53,7 @@ function setupEventListeners() {
             }
         });
     }
+
     const yawBtn = document.getElementById("yawBtn");
     if (yawBtn) {
         yawBtn.addEventListener('click', () => {
@@ -77,16 +64,7 @@ function setupEventListeners() {
             }
         });
     }
-    /* const trackAntennaBtn = document.getElementById("trackAntennaBtn") as HTMLInputElement;
-    if (trackAntennaBtn) {
-        trackAntennaBtn.addEventListener("change", function () {
-            if (this.checked) {
-                //view.drawPayloadPointingLine();
-                view.payloadTrackAntenna();
-            } else {
-                view.payloadStopTrackingAntenna();
-            }
-        }); */
+
     const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
