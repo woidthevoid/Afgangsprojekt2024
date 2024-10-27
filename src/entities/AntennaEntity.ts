@@ -1,5 +1,5 @@
 import { BaseEntity } from "./BaseEntity";
-//import qsantenna from "../assets/qsantenna.glb"
+import qsantenna from "../assets/qsantenna.glb"
 import { Cartesian3, ConstantPositionProperty, Entity, HeightReference } from "cesium";
 
 export class AntennaEntity implements BaseEntity {
@@ -12,7 +12,7 @@ export class AntennaEntity implements BaseEntity {
             id: this.id,
             position: position,
             model: {
-                uri: "../assets/qsantenna.glb",
+                uri: qsantenna,
                 scale: 0.8,
                 minimumPixelSize: 25,
                 //maximumScale: 200,
