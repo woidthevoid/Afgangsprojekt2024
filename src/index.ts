@@ -1,16 +1,16 @@
-import './styling.css'; //css is injected to html through bundle
+import './styling.css';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import { CesiumView } from "./views/CesiumView";
 
-(window as any).CESIUM_BASE_URL = '/Cesium/';
+(window as any).CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium";
 const view = new CesiumView('cesiumContainer');
 let droneAdded = false;
 let antennaAdded = false;
 
 async function init() {
     try {
+        console.log(typeof Cesium)
         await view.initialize();
-        setupEventListeners();
     } catch (error) {
         console.error('An error occurred during initialization:', error);
     }
@@ -21,7 +21,8 @@ function setupEventListeners() {
     const addDroneBtn = document.getElementById("addDroneBtn");
     if (addDroneBtn) {
         addDroneBtn.addEventListener('click', () => {
-            view.onAddDroneClicked();
+            init();
+            //view.onAddDroneClicked();
         });
     }
 
@@ -196,12 +197,12 @@ function setupEventListeners() {
     view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
 };
 
-(window as any).initView = function() {
+/* (window as any).initView = function() {
     init();
-}
+} */
 
 //_______________TESTING_______________//
-init();
+setupEventListeners()
 
 //setTimeout(testMove, 5000);
 
