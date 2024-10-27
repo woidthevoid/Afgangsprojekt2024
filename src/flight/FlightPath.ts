@@ -1,6 +1,5 @@
-import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer, Math as CesiumMath, Cartographic, HeightReference, ColorMaterialProperty, PolylineMaterialAppearance, Material } from "cesium";
+import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
 import { Terrain } from "./Terrain";
-import { PointEntity } from "../entities/PointEntity";
 
 export class FlightPath {
     private viewer: Viewer;
