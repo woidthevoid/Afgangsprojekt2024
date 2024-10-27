@@ -225,7 +225,7 @@ function setupEventListeners() {
 //_______________TESTING_______________//
 init();
 
-setTimeout(testMove, 5000);
+//setTimeout(testMove, 5000);
 
 function testMove() {
     const lonList = [10.32580470, 10.32585470, 10.32590470, 10.32595470, 10.32600470, 10.32605470, 10.32610470, 10.32615470, 10.32620470, 10.32625470];
