@@ -71,6 +71,14 @@ export class FlightPath {
         }
     }
 
+    public resetLivePath() {
+        this.removeLivePath();
+        this.livePathPositions = [];
+        this.livePathColors = [];
+        this.livePathPrimitive = null;
+
+    }
+
     public removeDeterminedPath() {
         const pathEntities = [this.determinedPathEntity, this.determinedStartPoint, this.determinedEndPoint];
         pathEntities.forEach(entity => {

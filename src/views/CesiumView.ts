@@ -3,7 +3,6 @@ import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
 import { EntityManager } from "../managers/EntityManager";
-import { PointEntity } from "../entities/PointEntity";
 
 function getRandomPower(): number {
     return Math.floor(Math.random() * 101);  // Generate a random integer between 0 and 100
@@ -63,7 +62,7 @@ export class CesiumView {
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
             });
-            this.viewer.scene.debugShowFramesPerSecond = true
+            this.viewer.scene.debugShowFramesPerSecond = true;
             const imageryProvider = await Cesium.createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
             //this.viewer.scene.backgroundColor = Color.BLACK;
@@ -178,9 +177,6 @@ export class CesiumView {
         if (!this.viewer) {
             throw new Error("Viewer is null");
         }
-        if (!id) {
-            id = "antenna-entity"
-        }
         const antenna = new AntennaEntity(id, Cesium.Cartesian3.fromDegrees(lon, lat, alt));
         const antennaEntity = antenna.getEntity()
         const antennaController = new AntennaController()
@@ -212,23 +208,29 @@ export class CesiumView {
         if (!id) {
             id = "drone-entity"
         }
-        const drone = new DroneEntity(this.viewer, id, Cesium.Cartesian3.fromDegrees(lon, lat, alt));
-        const droneController = new DroneController()
-        const droneEntity = drone.getEntity()
-        const payloadEntity = drone.getPayload()
-        droneController.setDrone(droneEntity)
-        droneController.setPayload(payloadEntity)
-        droneController.setViewer(this.viewer)
-        droneController.payloadController.setViewer(this.viewer)
-        this.viewer.trackedEntity = droneEntity;
-        this.entityManager.addEntity(droneEntity, droneController)
-        this.payloadTrackAntenna(id);
-        console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
+        try {
+            const drone = new DroneEntity(this.viewer, id, Cesium.Cartesian3.fromDegrees(lon, lat, alt));
+            const droneController = new DroneController()
+            const droneEntity = drone.getEntity()
+            const payloadEntity = drone.getPayload()
+            droneController.setDrone(droneEntity)
+            droneController.setPayload(payloadEntity)
+            droneController.setViewer(this.viewer)
+            droneController.payloadController.setViewer(this.viewer)
+            this.viewer.trackedEntity = droneEntity;
+            this.entityManager.addEntity(droneEntity, droneController)
+            this.payloadTrackAntenna(id);
+            console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
+            return true;
+        } catch (error) {
+            console.error("Failed to add drone - ", error);
+            return false;
+        }
     }
 
     updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
         if (!this.viewer) {
-            console.error("Viewer is null");
+            return console.error("Viewer is null");
         }
         try {
             const drone = this.entityManager.getControllerByEntityId(id);
@@ -241,6 +243,21 @@ export class CesiumView {
         } catch (error) {
             console.error("Failed to update drone position - ", error)
         }
+    }
+
+    zoomToCoordinates(lon: number, lat: number, height: number, duration: number) {
+        if (!this.viewer) {
+            return null;
+        }
+        this.viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
+            orientation: {
+                heading: Cesium.Math.toRadians(0),    // 0 = north
+                pitch: Cesium.Math.toRadians(-90),    // Looking down
+                roll: 0
+            },
+            duration: duration
+        });
     }
    
     testpyqtmove(lon: number, lat: number, alt: number) {
@@ -485,6 +502,13 @@ export class CesiumView {
         const drone = this.entityManager.getControllerByEntityId(drone_id);
         if(drone instanceof DroneController) {
             drone.removeLivePath();
+        }
+    }
+
+    resetLiveFlightPath(drone_id: string) {
+        const drone = this.entityManager.getControllerByEntityId(drone_id);
+        if (drone instanceof DroneController) {
+            drone.resetLivePath();
         }
     }
 

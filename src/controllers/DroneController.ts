@@ -43,6 +43,10 @@ export class DroneController {
         this.flightPath?.removeLivePath();
     }
 
+    resetLivePath() {
+        this.flightPath?.resetLivePath();
+    }
+
     removeDeterminedFlightPath() {
         this.flightPath?.removeDeterminedPath();
     }

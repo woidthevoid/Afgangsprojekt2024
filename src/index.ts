@@ -74,7 +74,7 @@ function setupEventListeners() {
     const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
-            const id = "QUADSATDRONE"
+            const id = "QSDRONE"
             if (this.checked) {
                 view.followDrone(id, true);
             } else {
@@ -146,13 +146,14 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateDronePosition = function(lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+(window as any).updateDronePosition = function(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
     //flightPathEnabled: "enabled" || "disabled"
-    const id = "QUADSATDRONE";
+    //const id = "QSDRONE"
     try {
         if (!droneAdded) {
-            droneAdded = true;
-            view.addDrone(id, lon, lat, alt);
+            if (view.addDrone(id, lon, lat, alt)) {
+                droneAdded = true;
+            }
         } else {
             view.updateDronePos(id, lon, lat, alt, flightPathEnabled);
         }
@@ -162,34 +163,41 @@ function setupEventListeners() {
 };
 
 (window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number) {
-    const id = "QUADSATANTENNA"
+    const id = "QSANTENNA"
     try {
         if (!antennaAdded) {
             antennaAdded = true
             view.addAntenna(id, lon, lat, alt);
+        } else {
+            view.updateAntennaPos(id, lon, lat, alt);
         }
-        view.updateAntennaPos(id, lon, lat, alt);
     } catch (error) {
         console.error("Error when trying to update antenna position - ", error);
     }
 };
 
 (window as any).setFlightPath = function(
+    id: string,
     longitudes: number[], 
     latitudes: number[], 
     altitudes: number[]
 ) {
-    const id = "QUADSATDRONE";
+    //const id = "QSDRONE";
     view.drawDeterminedFlightPath(id, longitudes, latitudes, altitudes);
 };
 
-(window as any).removeLiveFlightPath = function() {
-    const id = "QUADSATDRONE";
+(window as any).removeLiveFlightPath = function(id: string) {
+    //const id = "QSDRONE";
     view.removeLiveFlightPath(id);
 };
 
-(window as any).removeDeterminedFlightPath = function() {
-    const id = "QUADSATDRONE";
+(window as any).resetLiveFlightPath = function(id: string) {
+    //const id = "QSDRONE";
+    view.resetLiveFlightPath(id);
+};
+
+(window as any).removeDeterminedFlightPath = function(id: string) {
+    //const id = "QSDRONE";
     view.removeDeterminedFlightPath(id);
 };
 
@@ -202,9 +210,14 @@ function setupEventListeners() {
     view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
 };
 
+(window as any).zoomTo = function(lon: number, lat: number, height: number, duration: number) {
+    //duration in seconds
+    view.zoomToCoordinates(lon, lat, height, duration);
+};
+
 (window as any).initView = function() {
     init();
-}
+};
 
 //_______________TESTING_______________//
 //init();
@@ -216,7 +229,7 @@ function testMove() {
     const lonList = [10.32580470, 10.32585470, 10.32590470, 10.32595470, 10.32600470, 10.32605470, 10.32610470, 10.32615470, 10.32620470, 10.32625470];
     const latList = [55.47177510, 55.47177550, 55.47177600, 55.47177650, 55.47177700, 55.47177750, 55.47177800, 55.47177850, 55.47177900, 55.47177950];
     const altList = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
-    const id = "QUADSATDRONE"
+    const id = "QSDRONE"
 
     view.addDrone(id, lonList[0], latList[0], altList[0]);
     view.drawDeterminedFlightPath(id, lonList, latList, altList);

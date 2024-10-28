@@ -22,7 +22,10 @@ export class AntennaController {
             return
         }
         const newPosition = Cartesian3.fromDegrees(longitude, latitude, altitude);
-        this.antenna.position = new ConstantPositionProperty(newPosition)
-        console.log("antenna moved to ", longitude, latitude, altitude)
+        if (this.antenna.position instanceof ConstantPositionProperty) {
+            this.antenna.position.setValue(newPosition);
+        } else {
+            this.antenna.position = new ConstantPositionProperty(newPosition);
+        }
     }
 }
