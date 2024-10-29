@@ -338,8 +338,25 @@ export class CesiumView {
             }
         }
         console.log(`CesiumView.ts: Antenna added: ${antennaEntity.id}`)
-        this.antennaController.setAntenna(this.antenna.getEntity())
+        this.antennaController.setAntenna(this.antenna.getEntity());
+
+        /* const heading = Cesium.Math.toRadians(50); // 0 degrees for north
+        const pitch = Cesium.Math.toRadians(20); // Level pitch
+        const roll = Cesium.Math.toRadians(50); // No roll
+
+        // Create a HeadingPitchRoll for north orientation
+        const hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+
+        // Define position using WGS84
+        const position = Cesium.Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude);
+
+        // Convert HeadingPitchRoll to a quaternion
+        const orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
         //this.mountAntennaToGround()
+
+        this.antennaController.updateAntennaOrientation(orientation);
+
+        this.zoomToCoordinates(initialLongitude, initialLatitude, 100, 5) */
     }
 
     followDrone(drone_id: string, follow: boolean) {
