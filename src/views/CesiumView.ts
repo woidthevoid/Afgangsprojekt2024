@@ -3,6 +3,7 @@ import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
 import { EntityManager } from "../managers/EntityManager";
+import { Terrain } from "../flight/Terrain";
 
 function getRandomPower(): number {
     return Math.floor(Math.random() * 101);  // Generate a random integer between 0 and 100
@@ -15,6 +16,7 @@ export class CesiumView {
     private antenna: AntennaEntity | null = null;
     private pointingLine: any | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
+    private terrain: Terrain | null = null;
     droneController: DroneController;
     antennaController: AntennaController;
     entityManager: EntityManager;
@@ -65,6 +67,7 @@ export class CesiumView {
             this.viewer.scene.debugShowFramesPerSecond = true;
             const imageryProvider = await Cesium.createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
+            this.terrain = Terrain.getInstance(this.viewer);
             //this.viewer.scene.backgroundColor = Color.BLACK;
 
             //this.viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -82,6 +85,7 @@ export class CesiumView {
             const longitudes = [10.3260, 10.3265, 10.3270, 10.3275, 10.3280];
             const altitudes = [50, 55, 60, 65, 70];
             this.createFlightPathFromData(timestamps, longitudes, latitudes, altitudes); */
+            return this.viewer;
         } catch (error) {
             // Log full error details
             if (error instanceof Error) {
@@ -89,6 +93,7 @@ export class CesiumView {
             } else {
                 console.error("Failed to initialize Cesium viewer:", error);
             }
+            return null;
         }
     }
 
@@ -298,26 +303,29 @@ export class CesiumView {
     onAddDroneClicked() {
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 50;
+        const INITIAL_ALTITUDE = 200;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        this.startDroneSimulation();
+        //this.startDroneSimulation();
     }
 
-    addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
+    public async addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
         if (!this.viewer) {
             throw new Error("Viewer is null");
         }
-        this.drone = new DroneEntity(this.viewer, "drone-id", Cesium.Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
-        const droneEntity = this.drone.getEntity()
-        const payloadEntity = this.drone.getPayload()
-        if (tracked) {
-            this.viewer.trackedEntity = droneEntity;
+        const groundRef = await this.terrain?.setConstantGroundRef(initialLongitude, initialAltitude);
+        if (groundRef !== undefined) {
+            this.drone = new DroneEntity(this.viewer, "drone-id", Cesium.Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude + groundRef));
+            const droneEntity = this.drone.getEntity()
+            const payloadEntity = this.drone.getPayload()
+            if (tracked) {
+                this.viewer.trackedEntity = droneEntity;
+            }
+            console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
+            this.droneController?.setDrone(droneEntity)
+            this.droneController?.setPayload(payloadEntity)
+            this.droneController?.payloadController.setViewer(this.viewer)
+            this.droneController?.setViewer(this.viewer)
         }
-        console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
-        this.droneController?.setDrone(droneEntity)
-        this.droneController?.setPayload(payloadEntity)
-        this.droneController?.payloadController.setViewer(this.viewer)
-        this.droneController?.setViewer(this.viewer)
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -547,12 +555,12 @@ export class CesiumView {
         //hca
         let longitude = 10.3260;
         let latitude = 55.4725;
-        let altitude = 50;
+        let altitude = 100;
 
         //chile
         /* let longitude = -70.6014607699504;
         let latitude = -28.491158255396414;
-        let altitude = 50; */
+        let altitude = 7000; */
 
 
     

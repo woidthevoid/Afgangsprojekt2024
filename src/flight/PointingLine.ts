@@ -12,7 +12,7 @@ export class PointingLine {
         this.viewer = viewer;
         this.entity = entity;
         this.lineLength = lineLength;
-        this.terrain = new Terrain(viewer);
+        this.terrain = Terrain.getInstance(viewer);
 
         // Create the polyline as an Entity
         this.createPolyline();

@@ -12,13 +12,15 @@ export class FlightPath {
     private determinedEndPoint: any | null = null;
 
     constructor(viewer: any) {
-        this.terrain = new Terrain(viewer);
+        this.terrain = Terrain.getInstance(viewer);
         this.viewer = viewer;
     }
 
-    public async updateLivePath(lon: number, lat: number, alt: number, color: any) {
-        const terrainHeight = await this.terrain.getTerrainHeight(lon, lat);
-        const actualAlt = terrainHeight + alt;
+    public updateLivePath(lon: number, lat: number, alt: number, color: any) {
+        if (this.terrain.getConstantGroundRef() == -1) {
+            return;
+        }
+        const actualAlt = this.terrain.getConstantGroundRef() + alt;
         const newPosition = Cesium.Cartesian3.fromDegrees(lon, lat, actualAlt);
         // Add the new position and color to the arrays
         this.livePathPositions.push(newPosition);

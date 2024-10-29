@@ -1,13 +1,22 @@
 //import { Cartographic, sampleTerrainMostDetailed, Viewer, Math as CesiumMath } from "cesium";
 
 export class Terrain {
+    private static _instance: Terrain | null = null;
     private viewer: any;
     private terrainCache: Map<string, { lon: number, lat: number, height: number, timestamp: number }> = new Map();  // Cache with coordinates
     private cacheDuration: number = 5 * 60 * 1000;  // Cache expiration time in milliseconds (default 5 minutes)
     private cacheTolerance: number = 0.00003;  // Tolerance for latitude/longitude comparison (~2 meters)
+    private constantGroundRef: number = -1;
 
     constructor(viewer: any) {
         this.viewer = viewer;
+    }
+
+    public static getInstance(viewer: any): Terrain {
+        if (this._instance === null) {
+            this._instance = new Terrain(viewer);
+        }
+        return this._instance;
     }
 
     public async getTerrainHeight(lon: number, lat: number): Promise<number> {
@@ -28,6 +37,20 @@ export class Terrain {
         this.terrainCache.set(this.getCacheKey(lon, lat), { lon, lat, height: terrainHeight, timestamp: now });
 
         return terrainHeight;
+    }
+
+    public getConstantGroundRef(): number {
+        return this.constantGroundRef;
+    }
+
+    public async setConstantGroundRef(longitude: number, latitude: number): Promise<number> {
+        try {
+            const terrainHeight = await this.getTerrainHeight(longitude, latitude);
+            this.constantGroundRef = terrainHeight;
+            return this.constantGroundRef;
+        } catch (error) {
+            return 0;
+        }
     }
 
     private async sampleTerrain(lon: number, lat: number): Promise<number> {

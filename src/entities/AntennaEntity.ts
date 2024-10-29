@@ -1,5 +1,6 @@
 import { BaseEntity } from "./BaseEntity";
 import { Cartesian3, ConstantPositionProperty, Entity, HeightReference } from "cesium";
+import qsantenna from "../assets/qsantenna.glb"
 
 export class AntennaEntity implements BaseEntity {
     public id: string;
@@ -11,7 +12,8 @@ export class AntennaEntity implements BaseEntity {
             id: this.id,
             position: position,
             model: {
-                uri: "qrc:/map3d/LiveMap3D/assets/qsantenna.glb",
+                //uri: "qrc:/map3d/LiveMap3D/assets/qsantenna.glb",
+                uri: qsantenna,
                 scale: 0.8,
                 minimumPixelSize: 25,
                 //maximumScale: 200,

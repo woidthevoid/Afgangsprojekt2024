@@ -1,15 +1,22 @@
 import './styling.css';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import { CesiumView } from "./views/CesiumView";
+import { Terrain } from './flight/Terrain';
+import { Viewer } from 'cesium';
 
 (window as any).CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium";
 const view = new CesiumView('cesiumContainer');
 let droneAdded = false;
 let antennaAdded = false;
+let terrain: Terrain | null = null;
+let cesiumView: Viewer | null = null;
 
 async function init() {
     try {
-        await view.initialize();
+        cesiumView = await view.initialize();
+        if (cesiumView !== undefined) {
+            terrain = Terrain.getInstance(cesiumView);
+        }
     } catch (error) {
         console.error('An error occurred during initialization:', error);
     }
@@ -130,11 +137,16 @@ function setupEventListeners() {
     }
 };
 
-(window as any).addDrone = function(id: string, lon: number, lat: number, alt: number) {
-    try {
-        view.addDrone(id, lon, lat, alt);
-    } catch (error) {
-        console.error("Error when trying to add drone - ", error);
+(window as any).addDrone = async function(id: string, lon: number, lat: number, alt: number) {
+    if (terrain) {
+        const groundRef = await terrain.setConstantGroundRef(lon, lat);
+        if (groundRef !== undefined) {
+            try {
+                view.addDrone(id, lon, lat, alt + groundRef);
+            } catch (error) {
+                console.error("Error when trying to add drone - ", error);
+            }
+        }
     }
 };
 
@@ -146,19 +158,24 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateDronePosition = function(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+(window as any).updateDronePosition = async function(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
     //flightPathEnabled: "enabled" || "disabled"
     //const id = "QSDRONE"
-    try {
-        if (!droneAdded) {
-            if (view.addDrone(id, lon, lat, alt)) {
-                droneAdded = true;
+    if (terrain && terrain.getConstantGroundRef() != -1) {
+        try {
+            let realAlt = terrain.getConstantGroundRef() + alt;
+            if (!droneAdded) {
+                if (view.addDrone(id, lon, lat, realAlt)) {
+                    droneAdded = true;
+                }
+            } else {
+                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled);
             }
-        } else {
-            view.updateDronePos(id, lon, lat, alt, flightPathEnabled);
+        } catch (error) {
+            console.error("Error when trying to update drone position - ", error);
         }
-    } catch (error) {
-        console.error("Error when trying to update drone position - ", error);
+    } else if (terrain) {
+        terrain.setConstantGroundRef(lon, lat);
     }
 };
 
