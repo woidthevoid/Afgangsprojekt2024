@@ -91,7 +91,7 @@ export class FlightPath {
     }
 
     public async updateDeterminedPath(lons: number[], lats: number[], alts: number[]) {
-        if (lons.length !== lats.length || lats.length !== alts.length) {
+        if (lons.length !== lats.length || lats.length !== alts.length || this.terrain.getConstantGroundRef() == -1) {
             return null;
         }
         
@@ -104,8 +104,8 @@ export class FlightPath {
         });
 
         const correctedAlts = await Promise.all(
-            alts.map(async (altitude, i) => {
-                const terrainHeight = await this.terrain.getTerrainHeight(lons[i], lats[i]);
+            alts.map(async (altitude, _i) => {
+                const terrainHeight = this.terrain.getConstantGroundRef();
                 const updatedAltitude = terrainHeight + altitude;
                 return updatedAltitude;
             })
@@ -120,7 +120,7 @@ export class FlightPath {
             polyline: new Cesium.PolylineGraphics({
                 positions: positions,
                 width: 1,
-                material: Cesium.Color.ORANGE.withAlpha(0.4),
+                material: Cesium.Color.ORANGE.withAlpha(0.5),
                 clampToGround: false,
             })
         });
