@@ -46,10 +46,14 @@ export class Terrain {
     public async setConstantGroundRef(longitude: number, latitude: number): Promise<number> {
         try {
             const terrainHeight = await this.getTerrainHeight(longitude, latitude);
-            this.constantGroundRef = terrainHeight;
-            return this.constantGroundRef;
+            if (terrainHeight !== undefined) {
+                this.constantGroundRef = terrainHeight;
+                return this.constantGroundRef;
+            } else {
+                return -1;
+            }
         } catch (error) {
-            return 0;
+            return -1;
         }
     }
 
