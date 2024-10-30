@@ -1,27 +1,23 @@
-//import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
+import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
 import { Terrain } from "./Terrain";
 
 export class FlightPath {
-    private viewer: any;
+    private viewer: Viewer;
     private terrain: Terrain;
-    private livePathPositions: any[] = [];
-    private livePathColors: any[] = [];
-    private livePathPrimitive: any | null = null;
-    private determinedPathEntity: any | null = null;
-    private determinedStartPoint: any | null = null;
-    private determinedEndPoint: any | null = null;
+    private livePathPositions: Cartesian3[] = [];
+    private livePathColors: Color[] = [];
+    private livePathPrimitive: Primitive | null = null;
+    private determinedPathEntity: Entity | null = null;
+    private determinedStartPoint: Entity | null = null;
+    private determinedEndPoint: Entity | null = null;
 
-    constructor(viewer: any) {
+    constructor(viewer: Viewer) {
         this.terrain = Terrain.getInstance(viewer);
         this.viewer = viewer;
     }
 
-    public updateLivePath(lon: number, lat: number, alt: number, color: any) {
-        if (this.terrain.getConstantGroundRef() == -1) {
-            return;
-        }
-        const actualAlt = this.terrain.getConstantGroundRef() + alt;
-        const newPosition = Cesium.Cartesian3.fromDegrees(lon, lat, actualAlt);
+    public updateLivePath(lon: number, lat: number, alt: number, color: Color) {
+        const newPosition = Cesium.Cartesian3.fromDegrees(lon, lat, alt);
         // Add the new position and color to the arrays
         this.livePathPositions.push(newPosition);
         this.livePathColors.push(color);
@@ -91,7 +87,7 @@ export class FlightPath {
     }
 
     public async updateDeterminedPath(lons: number[], lats: number[], alts: number[]) {
-        if (lons.length !== lats.length || lats.length !== alts.length || this.terrain.getConstantGroundRef() == -1) {
+        if (lons.length !== lats.length || lats.length !== alts.length || this.terrain.getGroundRef() == -1) {
             return null;
         }
         
@@ -105,7 +101,7 @@ export class FlightPath {
 
         const correctedAlts = await Promise.all(
             alts.map(async (altitude, _i) => {
-                const terrainHeight = this.terrain.getConstantGroundRef();
+                const terrainHeight = this.terrain.getGroundRef();
                 const updatedAltitude = terrainHeight + altitude;
                 return updatedAltitude;
             })

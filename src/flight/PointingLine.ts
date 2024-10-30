@@ -1,14 +1,14 @@
-//import { Viewer, Cartesian3, Color, CallbackProperty, Entity, PolylineGraphics, JulianDate, Matrix3, Cartographic, Math as CesiumMath } from 'cesium';
+import { Viewer, Cartesian3, Color, CallbackProperty, Entity, PolylineGraphics, JulianDate, Matrix3, Cartographic, Math as CesiumMath } from 'cesium';
 import { Terrain } from './Terrain';
 
 export class PointingLine {
-    private viewer: any;
-    private entity: any;
+    private viewer: Viewer;
+    private entity: Entity;
     private terrain: Terrain | null = null;
-    private pointingLineEntity: any | null = null;
+    private pointingLineEntity: Entity | null = null;
     private lineLength: number;
 
-    constructor(viewer: any, entity: any, lineLength: number = 1000) {
+    constructor(viewer: Viewer, entity: Entity, lineLength: number = 1000) {
         this.viewer = viewer;
         this.entity = entity;
         this.lineLength = lineLength;
@@ -21,17 +21,17 @@ export class PointingLine {
     // Create the polyline using Entity and PolylineGraphics with a CallbackProperty for dynamic updates
     private createPolyline() {
         this.pointingLineEntity = this.viewer.entities.add({
-            polyline: new Cesium.PolylineGraphics({
-                positions: new Cesium.CallbackProperty(() => this.getLinePositions(), false), // Update positions dynamically
+            polyline: new PolylineGraphics({
+                positions: new CallbackProperty(() => this.getLinePositions(), false), // Update positions dynamically
                 width: 2.0,
-                material: Cesium.Color.YELLOW,
+                material: Color.YELLOW,
             })
         });
     }
 
     private async getLinePositions() {
-        const entityPosition = this.entity.position?.getValue(Cesium.JulianDate.now());
-        const orientation = this.entity.orientation?.getValue(Cesium.JulianDate.now());
+        const entityPosition = this.entity.position?.getValue(JulianDate.now());
+        const orientation = this.entity.orientation?.getValue(JulianDate.now());
 
         if (!entityPosition || !orientation) {
             console.error('Invalid entity position or orientation');
@@ -39,14 +39,14 @@ export class PointingLine {
         }
 
         // Convert entity position to cartographic (to get latitude, longitude, and height)
-        const cartographic = Cesium.Cartographic.fromCartesian(entityPosition);
+        const cartographic = Cartographic.fromCartesian(entityPosition);
 
         // Sample terrain height
         let terrainHeight: number | undefined;
         try {
             terrainHeight = await this.terrain?.getTerrainHeight(
-                Cesium.Math.toDegrees(cartographic.longitude),
-                Cesium.Math.toDegrees(cartographic.latitude)
+                CesiumMath.toDegrees(cartographic.longitude),
+                CesiumMath.toDegrees(cartographic.latitude)
             );
         } catch (error) {
             console.error('Failed to sample terrain height:', error);
@@ -58,9 +58,9 @@ export class PointingLine {
             alt = terrainHeight + cartographic.height;
         }
 
-        const correctedEntityPosition = Cesium.Cartesian3.fromDegrees(
-            Cesium.Math.toDegrees(cartographic.longitude),
-            Cesium.Math.toDegrees(cartographic.latitude),
+        const correctedEntityPosition = Cartesian3.fromDegrees(
+            CesiumMath.toDegrees(cartographic.longitude),
+            CesiumMath.toDegrees(cartographic.latitude),
             alt
         );
 
@@ -70,16 +70,16 @@ export class PointingLine {
         }
 
         // Get the direction the entity is facing
-        const rotationMatrix = Cesium.Matrix3.fromQuaternion(orientation, new Cesium.Matrix3());
+        const rotationMatrix = Matrix3.fromQuaternion(orientation, new Matrix3());
 
         // Assuming the +X axis is forward
-        const direction = Cesium.Matrix3.multiplyByVector(rotationMatrix, Cesium.Cartesian3.UNIT_X, new Cesium.Cartesian3());
-        Cesium.Cartesian3.normalize(direction, direction);  // Normalize the direction vector
+        const direction = Matrix3.multiplyByVector(rotationMatrix, Cartesian3.UNIT_X, new Cartesian3());
+        Cartesian3.normalize(direction, direction);  // Normalize the direction vector
 
         // Extend the direction vector by the specified line length
-        const scaledDirection = Cesium.Cartesian3.multiplyByScalar(direction, this.lineLength, new Cesium.Cartesian3());
+        const scaledDirection = Cartesian3.multiplyByScalar(direction, this.lineLength, new Cartesian3());
 
-        const endPoint = Cesium.Cartesian3.add(correctedEntityPosition, scaledDirection, new Cesium.Cartesian3());
+        const endPoint = Cartesian3.add(correctedEntityPosition, scaledDirection, new Cartesian3());
 
         if (!this.isValidCartesian3(endPoint)) {
             console.error('Invalid end point');

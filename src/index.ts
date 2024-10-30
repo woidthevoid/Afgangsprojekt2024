@@ -9,12 +9,12 @@ const view = new CesiumView('cesiumContainer');
 let droneAdded = false;
 let antennaAdded = false;
 let terrain: Terrain | null = null;
-let cesiumView: Viewer | null = null;
+let cesiumView: Viewer | undefined | null = null;
 
 async function init() {
     try {
         cesiumView = await view.initialize();
-        if (cesiumView !== undefined) {
+        if (cesiumView !== undefined && cesiumView instanceof Viewer) {
             terrain = Terrain.getInstance(cesiumView);
         }
     } catch (error) {
@@ -23,6 +23,13 @@ async function init() {
 }
 
 function setupEventListeners() {
+
+    const rotateBtn = document.getElementById("rotateBtn");
+    if (rotateBtn) {
+        rotateBtn.addEventListener('click', () => {
+            //view.testRotate();
+        });
+    }
 
     const testBtn = document.getElementById("testBtn");
     if (testBtn) {
@@ -116,6 +123,7 @@ function setupEventListeners() {
                 const lat = parseFloat(latInput.value);
                 const alt = parseFloat(altInput.value);
                 view.droneController.setDronePosition(lon, lat, alt);
+                //view.testRotate(lon, lat, alt);
             }
         });
     }
@@ -139,7 +147,7 @@ function setupEventListeners() {
 
 (window as any).addDrone = async function(id: string, lon: number, lat: number, alt: number) {
     if (terrain) {
-        const groundRef = await terrain.setConstantGroundRef(lon, lat);
+        const groundRef = await terrain.setGroundRef(lon, lat);
         if (groundRef !== undefined) {
             try {
                 view.addDrone(id, lon, lat, alt + groundRef);
@@ -150,9 +158,9 @@ function setupEventListeners() {
     }
 };
 
-(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number) {
+(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
     try {
-        view.addAntenna(id, lon, lat, alt);
+        view.addAntenna(id, lon, lat, alt, heading, pitch);
     } catch (error) {
         console.error("Error when trying to add antenna - ", error);
     }
@@ -161,9 +169,9 @@ function setupEventListeners() {
 (window as any).updateDronePosition = async function(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
     //flightPathEnabled: "enabled" || "disabled"
     //const id = "QSDRONE"
-    if (terrain && terrain.getConstantGroundRef() != -1) {
+    if (terrain && terrain.getGroundRef() != -1) {
         try {
-            let realAlt = terrain.getConstantGroundRef() + alt;
+            let realAlt = terrain.getGroundRef() + alt;
             if (!droneAdded) {
                 if (view.addDrone(id, lon, lat, realAlt)) {
                     droneAdded = true;
@@ -175,16 +183,16 @@ function setupEventListeners() {
             console.error("Error when trying to update drone position - ", error);
         }
     } else if (terrain) {
-        terrain.setConstantGroundRef(lon, lat);
+        terrain.setGroundRef(lon, lat);
     }
 };
 
-(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number) {
+(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
     const id = "QSANTENNA"
     try {
         if (!antennaAdded) {
             antennaAdded = true
-            view.addAntenna(id, lon, lat, alt);
+            view.addAntenna(id, lon, lat, alt, heading, pitch);
         } else {
             view.updateAntennaPos(id, lon, lat, alt);
         }

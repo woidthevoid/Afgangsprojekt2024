@@ -5,8 +5,8 @@ import qspayload from "../assets/qspayload.glb"
 export class DroneEntity {
     public id: string;
     public payloadId: string;
-    private entity: any;
-    private payload: any;
+    private entity: Entity;
+    private payload: Entity;
   
     constructor(viewer: Viewer, id: string, position: Cartesian3) {
       this.id = id;
@@ -59,7 +59,7 @@ export class DroneEntity {
       viewer.entities.add(this.payload);
     }
   
-    updatePayloadOrientation(newOrientation: any) {
+    updatePayloadOrientation(newOrientation: Quaternion) {
       this.payload.orientation = new ConstantProperty(newOrientation);
     }
   

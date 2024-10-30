@@ -16,6 +16,7 @@ import {
     SampledPositionProperty,
     ClockRange,
     HeightReference,
+    Entity,
 } from "cesium";
 import { DroneEntity } from "../entities/DroneEntity";
 import { DroneController } from "../controllers/DroneController";
@@ -29,17 +30,17 @@ function getRandomPower(): number {
 }
 
 export class CesiumView {
-    private tileset: any | null = null;
-    private viewer: any | null = null;
+    private tileset: Cesium3DTileset | null = null;
+    private viewer: Viewer | null = null;
     private drone: DroneEntity | null = null;
     private antenna: AntennaEntity | null = null;
-    private pointingLine: any | null = null;
+    private pointingLine: Entity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
     private terrain: Terrain | null = null;
     droneController: DroneController;
     antennaController: AntennaController;
     entityManager: EntityManager;
-    trackedAntenna: any | null = null;
+    trackedAntenna: Entity | null = null;
 
     constructor(private containerId: string) {
         this.droneController = new DroneController();
@@ -197,11 +198,11 @@ export class CesiumView {
         });
     }
 
-    addAntenna(id: string, lon: number, lat: number, alt: number) {
+    addAntenna(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
         if (!this.viewer) {
             throw new Error("Viewer is null");
         }
-        const antenna = new AntennaEntity(id, Cartesian3.fromDegrees(lon, lat, alt));
+        const antenna = new AntennaEntity(id, Cartesian3.fromDegrees(lon, lat, alt), heading, pitch);
         const antennaEntity = antenna.getEntity()
         const antennaController = new AntennaController()
         antennaController.setAntenna(antennaEntity)
@@ -222,6 +223,24 @@ export class CesiumView {
             }
         } catch (error) {
             console.error("Failed to update antenna position - ", error)
+        }
+    }
+
+    updateAntennaRotation(heading: number, pitch: number, roll: number) {
+        const headingR = CesiumMath.toRadians(heading); // 0 = facing north
+        const pitchR = CesiumMath.toRadians(pitch); // y axis
+        const rollR = CesiumMath.toRadians(roll); // x axis
+
+        const hpr = new HeadingPitchRoll(headingR, pitchR, rollR);
+
+        const antenna = this.entityManager.getControllerByEntityId("QSANTENNA");
+        if (antenna instanceof AntennaController) {
+            const position = antenna.getCurrentPosCartesian();
+            if (!position) {
+                return;
+            }
+            const orientation = Transforms.headingPitchRollQuaternion(position, hpr);
+            antenna.updateAntennaOrientation(orientation);
         }
     }
 
@@ -322,7 +341,7 @@ export class CesiumView {
     onAddDroneClicked() {
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
-        const INITIAL_ALTITUDE = 200;
+        const INITIAL_ALTITUDE = 60;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
         //this.startDroneSimulation();
     }
@@ -331,20 +350,17 @@ export class CesiumView {
         if (!this.viewer) {
             throw new Error("Viewer is null");
         }
-        const groundRef = await this.terrain?.setConstantGroundRef(initialLongitude, initialAltitude);
-        if (groundRef !== undefined) {
-            this.drone = new DroneEntity(this.viewer, "drone-id", Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude + groundRef));
-            const droneEntity = this.drone.getEntity()
-            const payloadEntity = this.drone.getPayload()
-            if (tracked) {
-                this.viewer.trackedEntity = droneEntity;
-            }
-            console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
-            this.droneController?.setDrone(droneEntity)
-            this.droneController?.setPayload(payloadEntity)
-            this.droneController?.payloadController.setViewer(this.viewer)
-            this.droneController?.setViewer(this.viewer)
+        this.drone = new DroneEntity(this.viewer, "drone-id", Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
+        const droneEntity = this.drone.getEntity()
+        const payloadEntity = this.drone.getPayload()
+        if (tracked) {
+            this.viewer.trackedEntity = droneEntity;
         }
+        console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
+        this.droneController?.setDrone(droneEntity)
+        this.droneController?.setPayload(payloadEntity)
+        this.droneController?.payloadController.setViewer(this.viewer)
+        this.droneController?.setViewer(this.viewer)
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -358,24 +374,6 @@ export class CesiumView {
         }
         console.log(`CesiumView.ts: Antenna added: ${antennaEntity.id}`)
         this.antennaController.setAntenna(this.antenna.getEntity());
-
-        /* const heading = CesiumMath.toRadians(50); // 0 degrees for north
-        const pitch = CesiumMath.toRadians(20); // Level pitch
-        const roll = CesiumMath.toRadians(50); // No roll
-
-        // Create a HeadingPitchRoll for north orientation
-        const hpr = new HeadingPitchRoll(heading, pitch, roll);
-
-        // Define position using WGS84
-        const position = Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude);
-
-        // Convert HeadingPitchRoll to a quaternion
-        const orientation = Transforms.headingPitchRollQuaternion(position, hpr);
-        //this.mountAntennaToGround()
-
-        this.antennaController.updateAntennaOrientation(orientation);
-
-        this.zoomToCoordinates(initialLongitude, initialLatitude, 100, 5) */
     }
 
     followDrone(drone_id: string, follow: boolean) {
@@ -564,13 +562,13 @@ export class CesiumView {
     }
 
     //helper function to calculate heading from direction vector
-    calculateHeading(fromPosition: any, toPosition: any): number {
+    calculateHeading(fromPosition: Cartesian3, toPosition: Cartesian3): number {
         const direction = Cartesian3.subtract(toPosition, fromPosition, new Cartesian3());
         return Math.atan2(direction.y, direction.x);
     }
 
     //helper function to calculate pitch from direction vector
-    calculatePitch(fromPosition: any, toPosition: any): number {
+    calculatePitch(fromPosition: Cartesian3, toPosition: Cartesian3): number {
         const direction = Cartesian3.subtract(toPosition, fromPosition, new Cartesian3());
         const flatDistance = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
         return Math.atan2(direction.z, flatDistance);

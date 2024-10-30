@@ -1,18 +1,18 @@
-//import { Cartographic, sampleTerrainMostDetailed, Viewer, Math as CesiumMath } from "cesium";
+import { Cartographic, sampleTerrainMostDetailed, Viewer, Math as CesiumMath } from "cesium";
 
 export class Terrain {
     private static _instance: Terrain | null = null;
-    private viewer: any;
+    private viewer: Viewer;
     private terrainCache: Map<string, { lon: number, lat: number, height: number, timestamp: number }> = new Map();  // Cache with coordinates
     private cacheDuration: number = 5 * 60 * 1000;  // Cache expiration time in milliseconds (default 5 minutes)
     private cacheTolerance: number = 0.00003;  // Tolerance for latitude/longitude comparison (~2 meters)
-    private constantGroundRef: number = -1;
+    private groundReference: number = -1;
 
-    constructor(viewer: any) {
+    constructor(viewer: Viewer) {
         this.viewer = viewer;
     }
 
-    public static getInstance(viewer: any): Terrain {
+    public static getInstance(viewer: Viewer): Terrain {
         if (this._instance === null) {
             this._instance = new Terrain(viewer);
         }
@@ -39,16 +39,16 @@ export class Terrain {
         return terrainHeight;
     }
 
-    public getConstantGroundRef(): number {
-        return this.constantGroundRef;
+    public getGroundRef(): number {
+        return this.groundReference;
     }
 
-    public async setConstantGroundRef(longitude: number, latitude: number): Promise<number> {
+    public async setGroundRef(longitude: number, latitude: number): Promise<number> {
         try {
             const terrainHeight = await this.getTerrainHeight(longitude, latitude);
             if (terrainHeight !== undefined) {
-                this.constantGroundRef = terrainHeight;
-                return this.constantGroundRef;
+                this.groundReference = terrainHeight;
+                return this.groundReference;
             } else {
                 return -1;
             }
@@ -58,8 +58,8 @@ export class Terrain {
     }
 
     private async sampleTerrain(lon: number, lat: number): Promise<number> {
-        const cartographicPosition = Cesium.Cartographic.fromDegrees(lon, lat);
-        const terrainSample = await Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, [cartographicPosition]);
+        const cartographicPosition = Cartographic.fromDegrees(lon, lat);
+        const terrainSample = await sampleTerrainMostDetailed(this.viewer.terrainProvider, [cartographicPosition]);
 
         if (!terrainSample || !terrainSample[0]) {
             console.error("Failed to sample terrain.");
@@ -108,7 +108,7 @@ export class Terrain {
         } else {
             // Convert meters to degrees
             const latTolerance = meters / 111320;  // Latitude tolerance (degrees)
-            const lonTolerance = meters / (111320 * Math.cos(Cesium.Math.toRadians(latitude)));  // Longitude tolerance (degrees)
+            const lonTolerance = meters / (111320 * Math.cos(CesiumMath.toRadians(latitude)));  // Longitude tolerance (degrees)
             
             // Use the larger tolerance for both lat/lon
             this.cacheTolerance = Math.max(latTolerance, lonTolerance);
