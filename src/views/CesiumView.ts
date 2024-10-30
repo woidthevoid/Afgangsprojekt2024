@@ -26,7 +26,7 @@ import { EntityManager } from "../managers/EntityManager";
 import { Terrain } from "../flight/Terrain";
 
 function getRandomPower(): number {
-    return Math.floor(Math.random() * 101);  // Generate a random integer between 0 and 100
+    return Math.floor(Math.random() * 1001);
 }
 
 export class CesiumView {

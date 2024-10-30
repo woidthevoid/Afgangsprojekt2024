@@ -24,13 +24,6 @@ async function init() {
 
 function setupEventListeners() {
 
-    const rotateBtn = document.getElementById("rotateBtn");
-    if (rotateBtn) {
-        rotateBtn.addEventListener('click', () => {
-            //view.testRotate();
-        });
-    }
-
     const testBtn = document.getElementById("testBtn");
     if (testBtn) {
         testBtn.addEventListener('click', () => {
@@ -238,6 +231,20 @@ function setupEventListeners() {
 (window as any).zoomTo = function(lon: number, lat: number, height: number, duration: number) {
     //duration in seconds
     view.zoomToCoordinates(lon, lat, height, duration);
+};
+
+(window as any).showScale = function () {
+    const powerScale = document.getElementById('powerScale');
+    if (powerScale) {
+        powerScale.style.visibility = "visible";
+    }
+};
+
+(window as any).hideScale = function () {
+    const powerScale = document.getElementById('powerScale');
+    if (powerScale) {
+        powerScale.style.visibility = "hidden";
+    }
 };
 
 (window as any).initView = function() {

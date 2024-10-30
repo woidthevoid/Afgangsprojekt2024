@@ -12,13 +12,14 @@
         <button id="addAntennaBtn">Add antenna</button>
     </div>
     <div class="controls">
-        <input type="checkbox" id="tilesBtn">
-        <label>Enhanced details</label>
-        <br>
-        <input type="checkbox" id="followDroneBtn" checked>
-        <label>Follow Drone</label>
-        <br>
-        <br>
+        <div class="checkbox-container">
+            <input type="checkbox" id="tilesBtn">
+            <label for="tilesBtn">Enhanced details</label>
+        </div>
+        <div class="checkbox-container">
+            <input type="checkbox" id="followDroneBtn" checked>
+            <label for="followDroneBtn">Follow Drone</label>
+        </div>
 
         <!-- <label for="longitudeInput">Longitude:</label>
         <input type="number" id="longitudeInput" value="10.32595470">
@@ -33,9 +34,18 @@
         <br>
 
         <button id="applyCoordinatesBtn">Apply coordinates</button> -->
+
         <button id="testBtn">init</button>
-        <button id="rotateBtn">rotate</button>
     </div>
+    <!-- <div id="powerScale" class="power-scale">
+        <div class="labels">
+            <span id="max-power">100</span>
+        </div>
+        <div class="color-gradient"></div>
+        <div class="labels">
+            <span id="min-power">0</span>
+        </div>
+    </div> -->
     <div id="cesiumContainer"></div>
     <script src="bundle.js"></script>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Cesium.js"></script>
