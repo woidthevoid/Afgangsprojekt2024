@@ -165,10 +165,8 @@ function setupEventListeners() {
     if (terrain && terrain.getGroundRef() != -1) {
         try {
             let realAlt = terrain.getGroundRef() + alt;
-            if (!droneAdded) {
-                if (view.addDrone(id, lon, lat, realAlt)) {
-                    droneAdded = true;
-                }
+            if (!view.entityManager.getEntityById(id)) {
+                view.addDrone(id, lon, lat, realAlt);
             } else {
                 view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled);
             }
@@ -233,57 +231,24 @@ function setupEventListeners() {
     view.zoomToCoordinates(lon, lat, height, duration);
 };
 
-(window as any).showScale = function () {
+(window as any).showScale = function (show: string) {
     const powerScale = document.getElementById('powerScale');
     if (powerScale) {
-        powerScale.style.visibility = "visible";
+        if (show == "true") {
+            powerScale.style.visibility = "visible";
+        } else if (show == "false") {
+            powerScale.style.visibility = "hidden";
+        }
     }
 };
 
-(window as any).hideScale = function () {
-    const powerScale = document.getElementById('powerScale');
-    if (powerScale) {
-        powerScale.style.visibility = "hidden";
-    }
-};
-
-(window as any).initView = function() {
+(window as any).initView = function () {
     init();
 };
 
-//_______________TESTING_______________//
-//init();
 setupEventListeners();
 
-//setTimeout(testMove, 5000);
+//_______________TESTING_______________//
+//init();
 
-function testMove() {
-    const lonList = [10.32580470, 10.32585470, 10.32590470, 10.32595470, 10.32600470, 10.32605470, 10.32610470, 10.32615470, 10.32620470, 10.32625470];
-    const latList = [55.47177510, 55.47177550, 55.47177600, 55.47177650, 55.47177700, 55.47177750, 55.47177800, 55.47177850, 55.47177900, 55.47177950];
-    const altList = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
-    const id = "QSDRONE"
 
-    view.addDrone(id, lonList[0], latList[0], altList[0]);
-    view.drawDeterminedFlightPath(id, lonList, latList, altList);
-
-    // Define the interval function
-    let index = 0;
-    const intervalID = setInterval(() => {
-        if (index >= lonList.length) {
-            clearInterval(intervalID); // Stop after the last location
-            //view.removeDeterminedFlightPath(id);
-            //view.removeLiveFlightPath(id);
-            return;
-        }
-
-        // Retrieve the next longitude, latitude, and altitude from the separate lists
-        const lon = lonList[index];
-        const lat = latList[index];
-        const alt = altList[index];
-
-        // Call moveDrone with the coordinates from the lists
-        view.updateDronePos(id, lon, lat, alt, "enabled");
-
-        index++; // Increment index to move to the next location
-    }, 1000); // 1-second interval
-}
