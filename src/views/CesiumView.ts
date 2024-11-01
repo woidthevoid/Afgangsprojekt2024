@@ -302,34 +302,6 @@ export class CesiumView {
             duration: duration
         });
     }
-   
-    testpyqtmove(lon: number, lat: number, alt: number) {
-        this.droneController?.moveDrone(lon, lat, alt, 10)
-    }
-
-    onMoveClicked() {
-        this.droneController?.onMoveClicked()
-    }
-
-    /* onRotateClicked() {
-        this.droneController?.onRotateClicked()
-    } */
-
-    onCancelClicked() {
-        this.droneController?.cancelMoveDrone()
-    }
-
-    setPayloadRoll(degrees: number) {
-        this.droneController?.setPayloadRoll(degrees)
-    }
-
-    setPayloadPitch(degrees: number) {
-        this.droneController?.setPayloadPitch(degrees)
-    }
-
-    setPayloadYaw(degrees: number) {
-        this.droneController?.setPayloadYaw(degrees)
-    }
 
     onAddAntennaClicked() {
         const ANTENNA_LONGITUDE = 10.32580470;

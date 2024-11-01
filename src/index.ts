@@ -45,39 +45,6 @@ function setupEventListeners() {
         });
     }
 
-    const rollBtn = document.getElementById("rollBtn");
-    if (rollBtn) {
-        rollBtn.addEventListener('click', () => {
-            const rollInput = document.getElementById("rollInput") as HTMLInputElement;
-            if (rollInput) {
-                const roll = parseFloat(rollInput.value);
-                view.setPayloadRoll(roll);
-            }
-        });
-    }
-
-    const pitchBtn = document.getElementById("pitchBtn");
-    if (pitchBtn) {
-        pitchBtn.addEventListener('click', () => {
-            const pitchInput = document.getElementById("pitchInput") as HTMLInputElement;
-            if (pitchInput) {
-                const pitch = parseFloat(pitchInput.value);
-                view.setPayloadPitch(pitch);
-            }
-        });
-    }
-
-    const yawBtn = document.getElementById("yawBtn");
-    if (yawBtn) {
-        yawBtn.addEventListener('click', () => {
-            const yawInput = document.getElementById("yawInput") as HTMLInputElement;
-            if (yawInput) {
-                const yaw = parseFloat(yawInput.value);
-                view.setPayloadYaw(yaw);
-            }
-        });
-    }
-
     const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
@@ -104,31 +71,7 @@ function setupEventListeners() {
               }, 6000);
         });
     }
-
-    const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
-    if (applyCoordinatesBtn) {
-        applyCoordinatesBtn.addEventListener('click', () => {
-            const lonInput = document.getElementById("longitudeInput") as HTMLInputElement;
-            const latInput = document.getElementById("latitudeInput") as HTMLInputElement;
-            const altInput = document.getElementById("altitudeInput") as HTMLInputElement;
-            if (lonInput && latInput && altInput) {
-                const lon = parseFloat(lonInput.value);
-                const lat = parseFloat(latInput.value);
-                const alt = parseFloat(altInput.value);
-                view.droneController.setDronePosition(lon, lat, alt);
-                //view.testRotate(lon, lat, alt);
-            }
-        });
-    }
 }
-
-(window as any).move = function(lon: number, lat: number, alt: number) {
-    try {
-        view.testpyqtmove(lon, lat, alt);
-    } catch (error) {
-        console.error('Error when trying to move drone - ', error);
-    }
-};
 
 (window as any).updatePayloadOrientation = function(roll: number, pitch: number, yaw: number) {
     try {
