@@ -36,7 +36,6 @@ export class CesiumView {
     private antenna: AntennaEntity | null = null;
     private pointingLine: Entity | null = null;
     private payloadTrackAntennaCallback: (() => void) | null = null;
-    private terrain: Terrain | null = null;
     droneController: DroneController;
     antennaController: AntennaController;
     entityManager: EntityManager;
@@ -65,11 +64,6 @@ export class CesiumView {
             const terrainProvider = await createWorldTerrainAsync();
             this.viewer = new Viewer(this.containerId, {
                 terrainProvider: terrainProvider,
-                //globe: false,
-                //skyAtmosphere: new SkyAtmosphere(),
-                //requestRenderMode: true,
-                //maximumRenderTimeChange: Infinity,
-                //skyBox: false,
                 skyAtmosphere: false,
                 animation: false,
                 timeline: false,
@@ -87,24 +81,8 @@ export class CesiumView {
             this.viewer.scene.debugShowFramesPerSecond = true;
             const imageryProvider = await createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
-            this.terrain = Terrain.getInstance(this.viewer);
-            //this.viewer.scene.backgroundColor = Color.BLACK;
-
-            //this.viewer.scene.globe.depthTestAgainstTerrain = true;
-
-            //3d tiles
-            /* this.viewer.scene.primitives.add(
-                await Cesium3DTileset.fromIonAssetId(2275207),
-            ); */
             
             console.log("Cesium viewer initialized");
-            //this.droneController?.setViewer(this.viewer);
-
-            /* const timestamps = [1633024800, 1633024900, 1633025000, 1633025100, 1633025200];
-            const latitudes = [55.4725, 55.4730, 55.4735, 55.4740, 55.4745];
-            const longitudes = [10.3260, 10.3265, 10.3270, 10.3275, 10.3280];
-            const altitudes = [50, 55, 60, 65, 70];
-            this.createFlightPathFromData(timestamps, longitudes, latitudes, altitudes); */
             return this.viewer;
         } catch (error) {
             // Log full error details
@@ -148,7 +126,7 @@ export class CesiumView {
             new Cartesian3()
         );
     
-        //manually update the camera's position and orientation
+        //update the camera's position and orientation
         this.viewer.camera.setView({
             destination: cameraOffset,
             orientation: {
