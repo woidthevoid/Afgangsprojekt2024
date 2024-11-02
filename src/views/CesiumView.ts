@@ -249,7 +249,7 @@ export class CesiumView {
         }
     }
 
-    updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+    updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled", power: number | null = null) {
         if (!this.viewer) {
             return console.error("Viewer is null");
         }
@@ -258,7 +258,7 @@ export class CesiumView {
             if (drone instanceof DroneController) {
                 drone.moveDrone(lon, lat, alt, 0.5);
                 if (flightPathEnabled == "enabled") {
-                    drone.drawLiveFlightPath(lon, lat, alt);
+                    drone.drawLiveFlightPath(lon, lat, alt, power);
                 }
             }
         } catch (error) {

@@ -28,9 +28,9 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
-    drawLiveFlightPath (lon: number, lat: number, alt: number) {
+    drawLiveFlightPath (lon: number, lat: number, alt: number, power: number | null = null) {
         setTimeout(() => {
-            this.flightPath?.updateLivePath(lon, lat, alt);
+            this.flightPath?.updateLivePath(lon, lat, alt, power);
         }, 600);
     }
 

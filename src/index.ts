@@ -101,7 +101,14 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateDronePosition = async function(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+(window as any).updateDronePosition = async function(
+    id: string, 
+    lon: number, 
+    lat: number, 
+    alt: number, 
+    flightPathEnabled: string = "disabled", 
+    power: number | null = null
+) {
     //flightPathEnabled: "enabled" || "disabled"
     //const id = "QSDRONE"
     if (terrain && terrain.getGroundRef() != -1) {
@@ -110,7 +117,13 @@ function setupEventListeners() {
             if (!view.entityManager.getEntityById(id)) {
                 view.addDrone(id, lon, lat, realAlt);
             } else {
-                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled);
+                const powerScale = document.getElementById('powerScale');
+                if (power != null && powerScale) {
+                    powerScale.style.visibility = "visible";
+                } else if (powerScale) {
+                    powerScale.style.visibility = "hidden";
+                }
+                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, power);
             }
         } catch (error) {
             console.error("Error when trying to update drone position - ", error);
