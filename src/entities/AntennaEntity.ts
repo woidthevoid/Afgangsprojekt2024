@@ -1,8 +1,7 @@
-import { BaseEntity } from "./BaseEntity";
 import { Cartesian3, ConstantPositionProperty, Entity, HeightReference, Math as CesiumMath, HeadingPitchRoll, Transforms } from "cesium";
-import qsantenna from "../assets/qsantenna.glb"
+//import qsantenna from "../assets/qsantenna.glb"
 
-export class AntennaEntity implements BaseEntity {
+export class AntennaEntity {
     public id: string;
     private entity: Entity;
 
@@ -19,8 +18,8 @@ export class AntennaEntity implements BaseEntity {
             position: position,
             orientation: orientation,
             model: {
-                //uri: "qrc:/map3d/LiveMap3D/assets/qsantenna.glb",
-                uri: qsantenna,
+                uri: "qrc:/map3d/LiveMap3D/assets/qsantenna.glb",
+                //uri: qsantenna,
                 scale: 0.8,
                 minimumPixelSize: 25,
                 //maximumScale: 200,

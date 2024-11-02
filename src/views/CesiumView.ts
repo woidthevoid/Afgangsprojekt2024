@@ -78,7 +78,7 @@ export class CesiumView {
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
             });
-            this.viewer.scene.debugShowFramesPerSecond = true;
+            //this.viewer.scene.debugShowFramesPerSecond = true;
             const imageryProvider = await createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
             

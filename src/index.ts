@@ -6,7 +6,6 @@ import { Viewer } from 'cesium';
 
 (window as any).CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium";
 const view = new CesiumView('cesiumContainer');
-let droneAdded = false;
 let antennaAdded = false;
 let terrain: Terrain | null = null;
 let cesiumView: Viewer | undefined | null = null;
@@ -190,8 +189,5 @@ function setupEventListeners() {
 };
 
 setupEventListeners();
-
-//_______________TESTING_______________//
-//init();
 
 
