@@ -9,6 +9,9 @@ const view = new CesiumView('cesiumContainer');
 let antennaAdded = false;
 let terrain: Terrain | null = null;
 let cesiumView: Viewer | undefined | null = null;
+let isDragging = false;
+let startX: number
+let startY: number
 
 async function init() {
     try {
@@ -68,6 +71,57 @@ function setupEventListeners() {
             setTimeout(() => {
                 toggleTilesBtn.disabled = false;
               }, 6000);
+        });
+    }
+
+    const joystick = document.getElementById('joystick');
+    if (joystick) {
+        joystick.addEventListener('mousedown', (event) => {
+            isDragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+            document.body.style.cursor = 'grabbing';
+          });
+    }
+
+    document.addEventListener('mousemove', (event) => {
+        if (!isDragging) {
+            return;
+        }
+      
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+      
+        // Camera heading (yaw) adjustment: Rotate the camera left or right
+        if (dx !== 0) {
+            view.setCameraHeading(dx);
+        }
+      
+        // Camera pitch adjustment: Tilt the camera up or down
+        if (dy !== 0) {
+          view.setCameraPitch(dy);
+        }
+      
+        startX = event.clientX;
+        startY = event.clientY;
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+      });
+
+    const zoomInBtn = document.getElementById("zoomInBtn") as HTMLInputElement;
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+        view.zoomIn(100);
+        });
+    }
+
+    const zoomOutBtn = document.getElementById("zoomOutBtn") as HTMLInputElement;
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+        view.zoomOut(100);
         });
     }
 }
@@ -202,5 +256,7 @@ function setupEventListeners() {
 };
 
 setupEventListeners();
+
+init();
 
 

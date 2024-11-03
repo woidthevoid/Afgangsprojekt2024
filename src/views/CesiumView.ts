@@ -23,11 +23,6 @@ import { DroneController } from "../controllers/DroneController";
 import { AntennaEntity } from "../entities/AntennaEntity";
 import { AntennaController } from "../controllers/AntennaController";
 import { EntityManager } from "../managers/EntityManager";
-import { Terrain } from "../flight/Terrain";
-
-function getRandomPower(): number {
-    return Math.floor(Math.random() * 1001);
-}
 
 export class CesiumView {
     private tileset: Cesium3DTileset | null = null;
@@ -281,6 +276,46 @@ export class CesiumView {
         });
     }
 
+    setCameraPitch(dy: number) {
+        if(!this.viewer) {
+            return;
+        }
+        this.viewer.camera.setView({
+            orientation: {
+            heading: this.viewer.camera.heading,
+            pitch: this.viewer.camera.pitch - CesiumMath.toRadians(dy * 0.1), // Adjust 0.1 for tilt speed
+            roll: this.viewer.camera.roll,
+            },
+        });
+    }
+
+    setCameraHeading(dx: number) {
+        if(!this.viewer) {
+            return;
+        }
+        this.viewer.camera.setView({
+            orientation: {
+            heading: this.viewer.camera.heading - CesiumMath.toRadians(dx * 0.1), // Adjust 0.1 for rotation speed
+            pitch: this.viewer.camera.pitch,
+            roll: this.viewer.camera.roll,
+            },
+        });
+    }
+
+    zoomIn(zoomAmount: number) {
+        if (!this.viewer) {
+            return;
+        }
+        this.viewer.camera.zoomIn(zoomAmount);
+    }
+
+    zoomOut(zoomAmount: number) {
+        if (!this.viewer) {
+            return;
+        }
+        this.viewer.camera.zoomOut(zoomAmount);
+    }
+
     onAddAntennaClicked() {
         const ANTENNA_LONGITUDE = 10.32580470;
         const ANTENNA_LATITUDE = 55.47177510;
@@ -293,7 +328,7 @@ export class CesiumView {
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 60;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        this.startDroneSimulation();
+        //this.startDroneSimulation();
     }
 
     public async addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
@@ -395,7 +430,7 @@ export class CesiumView {
     payloadTrackAntenna(drone_id: string) {
         if (!this.viewer) {
             console.error("Viewer is undefined");
-            return
+            return;
         }
         this.payloadTrackAntennaCallback = () => {
             this.updatePayloadOrientationToAntenna(drone_id);
@@ -535,6 +570,10 @@ export class CesiumView {
         }
     }
 
+    getRandomPower(): number {
+        return Math.floor(Math.random() * 1001);
+    }
+
     startDroneSimulation() {
         //hca
         let longitude = 10.3260;
@@ -548,27 +587,27 @@ export class CesiumView {
 
 
     
-        let direction = 1; // Controls the direction of horizontal movement (1 for forward, -1 for backward)
+        let direction = 1; // Direction of horizontal movement (1 for forward, -1 for backward)
         let movingHorizontally = true; // True when moving horizontally, false when moving down
         let movementDuration = 0; // Time counter for how long it's been moving in the current direction
     
         const intervalId = setInterval(() => {
-            const power = getRandomPower(); // Generate random power between 0 and 100
+            const power = this.getRandomPower(); // Generate random power between 0 and 100
     
             if (movingHorizontally) {
-                // Move horizontally (forward or backward) for 5 seconds
+                // Move horizontally for 5 seconds
                 if (movementDuration < 5000) {
-                    longitude += direction * 0.000005;  // Change in longitude
-                    latitude += direction * 0.000005;   // Change in latitude
+                    longitude += direction * 0.000005;  // +- longitude
+                    latitude += direction * 0.000005;   // +- latitude
                 } else {
-                    // After 5 seconds, switch to vertical movement (down)
+                    // After 5 seconds, switch to vertical movement
                     movingHorizontally = false;
                     movementDuration = 0;  // Reset the duration timer
                 }
             } else {
-                // Move vertically (down) for 1 second
+                // Move vertically for 1 second
                 if (movementDuration < 1000) {
-                    altitude -= 0.2;  // Decrease altitude to simulate going down
+                    altitude -= 0.2;  // go down 0.2
                 } else {
                     // After 1 second, switch back to horizontal movement
                     movingHorizontally = true;
@@ -579,7 +618,7 @@ export class CesiumView {
                 }
             }
     
-            // Call the method that updates the drone position and polyline with the new values
+            // Update the drone position and polyline with the new values
             this.droneController.testline(longitude, latitude, altitude, power);
     
             // Update the movement duration timer
