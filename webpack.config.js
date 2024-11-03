@@ -1,11 +1,19 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 module.exports = {
+  devtool: false,
   entry: './src/index.ts',
-  //devtool: 'source-map', // enable/disable source maps
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+    clean: true,
+  },
+  cache: false,
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
   module: {
     rules: [
       {
@@ -18,47 +26,31 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(glb|gltf)$/,
+        test: /\.(png|jpe?g|gif|svg|glb|gltf)$/,
         use: [
           {
             loader: 'file-loader',
             options: {
-              name: 'assets/[name].[hash].[ext]',
-              outputPath: 'assets',
-              publicPath: 'assets',
+              name: 'assets/[name].[ext]',
             },
           },
         ],
       },
     ],
   },
-  resolve: {
-    extensions: ['.ts', '.js'],
-  },
-  output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    clean: true, // Clean the output directory before each build
-  },
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'node_modules/cesium/Build/Cesium', to: 'Cesium' }
-      ],
+      inject: false,
     }),
     new Dotenv(),
   ],
   devServer: {
-    static: [
-      {
-        directory: path.join(__dirname, 'dist'),
-      },
-    ],
+    static: {
+      directory: path.join(__dirname, 'dist'),
+    },
     compress: true,
     port: 9000,
-    hot: false,  // Disable Hot Module Replacement
+    hot: false,
   },
 };

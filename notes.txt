@@ -1,2 +1,4 @@
 npm run build
 npm start
+
+npx webpack --config webpack.config.js

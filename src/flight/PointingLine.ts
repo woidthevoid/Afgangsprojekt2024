@@ -12,7 +12,7 @@ export class PointingLine {
         this.viewer = viewer;
         this.entity = entity;
         this.lineLength = lineLength;
-        this.terrain = new Terrain(viewer);
+        this.terrain = Terrain.getInstance(viewer);
 
         // Create the polyline as an Entity
         this.createPolyline();
@@ -29,7 +29,7 @@ export class PointingLine {
         });
     }
 
-    private async getLinePositions(): Promise<Cartesian3[]> {
+    private async getLinePositions() {
         const entityPosition = this.entity.position?.getValue(JulianDate.now());
         const orientation = this.entity.orientation?.getValue(JulianDate.now());
 
@@ -102,7 +102,7 @@ export class PointingLine {
         this.lineLength = newLength;
     }
 
-    isValidCartesian3(cartesian: Cartesian3): boolean {
+    isValidCartesian3(cartesian: any): boolean {
         return (
             isFinite(cartesian.x) &&
             isFinite(cartesian.y) &&

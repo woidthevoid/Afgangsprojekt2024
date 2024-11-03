@@ -18,8 +18,8 @@ html, body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 40%;
-    height: 40%;
+    width: 100%;
+    height: 100%;
 }
 
 .button-container {
@@ -30,8 +30,88 @@ html, body {
 }
 
 .controls {
-    color:white;
     position: absolute;
-    top: 30%;
+    top: 10px;
     z-index: 5;
+}
+
+.checkbox-container {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.power-scale {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    height: 200px;
+    width: 40px;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    text-align: center;
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 5;
+}
+
+.color-gradient {
+    height: 100%;
+    width: 15px;
+    background: linear-gradient(to top, blue, red);
+    margin: 5px 0;
+}
+
+.labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+#joystickContainer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+  }
+  
+#joystick {
+    width: 30px;
+    height: 30px;
+    background-color: #000;
+    border-radius: 50%;
+    cursor: grab;
+}
+
+#zoomControls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 5;
+}
+  
+#zoomControls button {
+    padding: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }

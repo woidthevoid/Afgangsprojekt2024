@@ -4,6 +4,9 @@ import { Terrain } from "./Terrain";
 export class FlightPath {
     private viewer: Viewer;
     private terrain: Terrain;
+    private minPower: number = Number.POSITIVE_INFINITY;
+    private maxPower: number = Number.NEGATIVE_INFINITY;
+    private livePathPowers: number[] = [];
     private livePathPositions: Cartesian3[] = [];
     private livePathColors: Color[] = [];
     private livePathPrimitive: Primitive | null = null;
@@ -12,24 +15,42 @@ export class FlightPath {
     private determinedEndPoint: Entity | null = null;
 
     constructor(viewer: Viewer) {
-        this.terrain = new Terrain(viewer);
+        this.terrain = Terrain.getInstance(viewer);
         this.viewer = viewer;
     }
 
-    public async updateLivePath(lon: number, lat: number, alt: number, color: Color) {
-        const terrainHeight = await this.terrain.getTerrainHeight(lon, lat);
-        const actualAlt = terrainHeight + alt;
-        const newPosition = Cartesian3.fromDegrees(lon, lat, actualAlt);
-        // Add the new position and color to the arrays
-        this.livePathPositions.push(newPosition);
-        this.livePathColors.push(color);
+    private calculateColor(power: number): Color {
+        // Calculate a color based on the power value
+        // Red shade = high value, blue shade = low value
+        const normalizedValue = (power - this.minPower) / (this.maxPower - this.minPower);
+        return Color.lerp(Color.BLUE.withAlpha(1.0), Color.RED.withAlpha(1.0), normalizedValue, new Color());
+    }
 
-        // If the primitive exists, remove it before creating the updated one
+    public updateLivePath(lon: number, lat: number, alt: number, power: number | null = null) {
+        const newPosition = Cartesian3.fromDegrees(lon, lat, alt);
+        // Track power range for dynamic coloring
+        if (power !== null) {
+            this.minPower = Math.min(this.minPower, power);
+            this.maxPower = Math.max(this.maxPower, power);
+        
+            // Store power output for each position
+            this.livePathPowers.push(power);
+        
+            // Recalculate colors for all points
+            this.livePathColors = this.livePathPowers.map((powerAtPosition) => this.calculateColor(powerAtPosition));
+            this.updatePowerScale(this.minPower, this.maxPower);
+        } else {
+            this.livePathColors.push(Color.BLUE);
+        }
+    
+        // Add the new position
+        this.livePathPositions.push(newPosition);
+    
+        // Remove old primitive and create a new one
         if (this.livePathPrimitive) {
             this.viewer.scene.primitives.remove(this.livePathPrimitive);
         }
-
-        // Create a new primitive with updated geometry
+    
         if (this.livePathPositions.length > 1) {
             this.createLivePathPrimitive();
         }
@@ -65,10 +86,31 @@ export class FlightPath {
         this.viewer.scene.primitives.add(this.livePathPrimitive);
     }
 
+    private updatePowerScale(minPower: number, maxPower: number) {
+        const minPowerElement = document.getElementById('min-power');
+        const maxPowerElement = document.getElementById('max-power');
+        
+        if (minPowerElement && maxPowerElement) {
+            minPowerElement.textContent = minPower.toFixed(1);
+            maxPowerElement.textContent = maxPower.toFixed(1);
+        }
+    }
+
     public removeLivePath() {
         if (this.livePathPrimitive) {
             this.viewer.scene.primitives.remove(this.livePathPrimitive);
         }
+    }
+
+    public resetLivePath() {
+        this.removeLivePath();
+        this.livePathPositions = [];
+        this.livePathColors = [];
+        this.livePathPowers = [];
+        this.livePathPrimitive = null;
+        this.minPower = Number.POSITIVE_INFINITY;
+        this.maxPower = Number.NEGATIVE_INFINITY;
+
     }
 
     public removeDeterminedPath() {
@@ -81,7 +123,7 @@ export class FlightPath {
     }
 
     public async updateDeterminedPath(lons: number[], lats: number[], alts: number[]) {
-        if (lons.length !== lats.length || lats.length !== alts.length) {
+        if (lons.length !== lats.length || lats.length !== alts.length || this.terrain.getGroundRef() == -1) {
             return null;
         }
         
@@ -94,8 +136,8 @@ export class FlightPath {
         });
 
         const correctedAlts = await Promise.all(
-            alts.map(async (altitude, i) => {
-                const terrainHeight = await this.terrain.getTerrainHeight(lons[i], lats[i]);
+            alts.map(async (altitude, _i) => {
+                const terrainHeight = this.terrain.getGroundRef();
                 const updatedAltitude = terrainHeight + altitude;
                 return updatedAltitude;
             })
@@ -110,7 +152,7 @@ export class FlightPath {
             polyline: new PolylineGraphics({
                 positions: positions,
                 width: 1,
-                material: Color.ORANGE.withAlpha(0.4),
+                material: Color.ORANGE.withAlpha(0.5),
                 clampToGround: false,
             })
         });

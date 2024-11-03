@@ -3,11 +3,13 @@ import { BaseEntity } from "./BaseEntity";
 
 export class PointEntity implements BaseEntity {
     public id: string;
-    private entity: Entity;
+    private entity: any;
 
-    constructor(id: string, position: Cartesian3, color: Color = Color.BLUE.withAlpha(0.4), pixelSize: number = 10) {
+    constructor(id: string, position: any, color: any, pixelSize: number = 10) {
         this.id = id;
-
+        if (!color) {
+            color = Color.BLUE.withAlpha(0.4)
+        }
         this.entity = new Entity({
             id: this.id,
             position: position,
@@ -33,7 +35,7 @@ export class PointEntity implements BaseEntity {
         });
     }
 
-    getEntity(): Entity {
+    getEntity() {
         return this.entity;
     }
 }

@@ -28,10 +28,9 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
-    drawLiveFlightPath (lon: number, lat: number, alt: number) {
-        const color = Color.BLUE
+    drawLiveFlightPath (lon: number, lat: number, alt: number, power: number | null = null) {
         setTimeout(() => {
-            this.flightPath?.updateLivePath(lon, lat, alt, color);
+            this.flightPath?.updateLivePath(lon, lat, alt, power);
         }, 600);
     }
 
@@ -43,6 +42,10 @@ export class DroneController {
         this.flightPath?.removeLivePath();
     }
 
+    resetLivePath() {
+        this.flightPath?.resetLivePath();
+    }
+
     removeDeterminedFlightPath() {
         this.flightPath?.removeDeterminedPath();
     }
@@ -51,7 +54,7 @@ export class DroneController {
         const color = this.getColorForPower(power);
         const animationTime = 0.5
         setTimeout(() => {
-        this.flightPath?.updateLivePath(lon, lat, alt, color);
+        this.flightPath?.updateLivePath(lon, lat, alt, power);
     }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }

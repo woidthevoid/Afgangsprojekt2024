@@ -1,22 +1,37 @@
-import './styling.css'; //css is injected to html through bundle
+import './styling.css';
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import { CesiumView } from "./views/CesiumView";
+import { Terrain } from './flight/Terrain';
+import { Viewer } from 'cesium';
 
-(window as any).CESIUM_BASE_URL = '/Cesium/';
+(window as any).CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium";
 const view = new CesiumView('cesiumContainer');
-let droneAdded = false;
 let antennaAdded = false;
+let terrain: Terrain | null = null;
+let cesiumView: Viewer | undefined | null = null;
+let isDragging = false;
+let startX: number
+let startY: number
 
 async function init() {
     try {
-        await view.initialize();
-        setupEventListeners();
+        cesiumView = await view.initialize();
+        if (cesiumView !== undefined && cesiumView instanceof Viewer) {
+            terrain = Terrain.getInstance(cesiumView);
+        }
     } catch (error) {
         console.error('An error occurred during initialization:', error);
     }
 }
 
 function setupEventListeners() {
+
+    const testBtn = document.getElementById("testBtn");
+    if (testBtn) {
+        testBtn.addEventListener('click', () => {
+            init();
+        });
+    }
 
     const addDroneBtn = document.getElementById("addDroneBtn");
     if (addDroneBtn) {
@@ -32,43 +47,10 @@ function setupEventListeners() {
         });
     }
 
-    const rollBtn = document.getElementById("rollBtn");
-    if (rollBtn) {
-        rollBtn.addEventListener('click', () => {
-            const rollInput = document.getElementById("rollInput") as HTMLInputElement;
-            if (rollInput) {
-                const roll = parseFloat(rollInput.value);
-                view.setPayloadRoll(roll);
-            }
-        });
-    }
-
-    const pitchBtn = document.getElementById("pitchBtn");
-    if (pitchBtn) {
-        pitchBtn.addEventListener('click', () => {
-            const pitchInput = document.getElementById("pitchInput") as HTMLInputElement;
-            if (pitchInput) {
-                const pitch = parseFloat(pitchInput.value);
-                view.setPayloadPitch(pitch);
-            }
-        });
-    }
-
-    const yawBtn = document.getElementById("yawBtn");
-    if (yawBtn) {
-        yawBtn.addEventListener('click', () => {
-            const yawInput = document.getElementById("yawInput") as HTMLInputElement;
-            if (yawInput) {
-                const yaw = parseFloat(yawInput.value);
-                view.setPayloadYaw(yaw);
-            }
-        });
-    }
-
     const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
-            const id = "QUADSATDRONE"
+            const id = "QSDRONE"
             if (this.checked) {
                 view.followDrone(id, true);
             } else {
@@ -92,29 +74,57 @@ function setupEventListeners() {
         });
     }
 
-    const applyCoordinatesBtn = document.getElementById("applyCoordinatesBtn");
-    if (applyCoordinatesBtn) {
-        applyCoordinatesBtn.addEventListener('click', () => {
-            const lonInput = document.getElementById("longitudeInput") as HTMLInputElement;
-            const latInput = document.getElementById("latitudeInput") as HTMLInputElement;
-            const altInput = document.getElementById("altitudeInput") as HTMLInputElement;
-            if (lonInput && latInput && altInput) {
-                const lon = parseFloat(lonInput.value);
-                const lat = parseFloat(latInput.value);
-                const alt = parseFloat(altInput.value);
-                view.droneController.setDronePosition(lon, lat, alt);
-            }
+    const joystick = document.getElementById('joystick');
+    if (joystick) {
+        joystick.addEventListener('mousedown', (event) => {
+            isDragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+            document.body.style.cursor = 'grabbing';
+          });
+    }
+
+    document.addEventListener('mousemove', (event) => {
+        if (!isDragging) {
+            return;
+        }
+      
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+      
+        // Camera heading (yaw) adjustment: Rotate the camera left or right
+        if (dx !== 0) {
+            view.setCameraHeading(dx);
+        }
+      
+        // Camera pitch adjustment: Tilt the camera up or down
+        if (dy !== 0) {
+          view.setCameraPitch(dy);
+        }
+      
+        startX = event.clientX;
+        startY = event.clientY;
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+      });
+
+    const zoomInBtn = document.getElementById("zoomInBtn") as HTMLInputElement;
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+        view.zoomIn(100);
+        });
+    }
+
+    const zoomOutBtn = document.getElementById("zoomOutBtn") as HTMLInputElement;
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+        view.zoomOut(100);
         });
     }
 }
-
-(window as any).move = function(lon: number, lat: number, alt: number) {
-    try {
-        view.testpyqtmove(lon, lat, alt);
-    } catch (error) {
-        console.error('Error when trying to move drone - ', error);
-    }
-};
 
 (window as any).updatePayloadOrientation = function(roll: number, pitch: number, yaw: number) {
     try {
@@ -124,66 +134,95 @@ function setupEventListeners() {
     }
 };
 
-(window as any).addDrone = function(id: string, lon: number, lat: number, alt: number) {
-    try {
-        view.addDrone(id, lon, lat, alt);
-    } catch (error) {
-        console.error("Error when trying to add drone - ", error);
+(window as any).addDrone = async function(id: string, lon: number, lat: number, alt: number) {
+    if (terrain) {
+        const groundRef = await terrain.setGroundRef(lon, lat);
+        if (groundRef !== undefined) {
+            try {
+                view.addDrone(id, lon, lat, alt + groundRef);
+            } catch (error) {
+                console.error("Error when trying to add drone - ", error);
+            }
+        }
     }
 };
 
-(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number) {
+(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
     try {
-        view.addAntenna(id, lon, lat, alt);
+        view.addAntenna(id, lon, lat, alt, heading, pitch);
     } catch (error) {
         console.error("Error when trying to add antenna - ", error);
     }
 };
 
-(window as any).updateDronePosition = function(lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled") {
+(window as any).updateDronePosition = async function(
+    id: string, 
+    lon: number, 
+    lat: number, 
+    alt: number, 
+    flightPathEnabled: string = "disabled", 
+    power: number | null = null
+) {
     //flightPathEnabled: "enabled" || "disabled"
-    const id = "QUADSATDRONE";
-    try {
-        if (!droneAdded) {
-            droneAdded = true;
-            view.addDrone(id, lon, lat, alt);
-        } else {
-            view.updateDronePos(id, lon, lat, alt, flightPathEnabled);
+    //const id = "QSDRONE"
+    if (terrain && terrain.getGroundRef() != -1) {
+        try {
+            let realAlt = terrain.getGroundRef() + alt;
+            if (!view.entityManager.getEntityById(id)) {
+                view.addDrone(id, lon, lat, realAlt);
+            } else {
+                const powerScale = document.getElementById('powerScale');
+                if (power != null && powerScale) {
+                    powerScale.style.visibility = "visible";
+                } else if (powerScale) {
+                    powerScale.style.visibility = "hidden";
+                }
+                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, power);
+            }
+        } catch (error) {
+            console.error("Error when trying to update drone position - ", error);
         }
-    } catch (error) {
-        console.error("Error when trying to update drone position - ", error);
+    } else if (terrain) {
+        terrain.setGroundRef(lon, lat);
     }
 };
 
-(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number) {
-    const id = "QUADSATANTENNA"
+(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
+    const id = "QSANTENNA"
     try {
         if (!antennaAdded) {
             antennaAdded = true
-            view.addAntenna(id, lon, lat, alt);
+            view.addAntenna(id, lon, lat, alt, heading, pitch);
+        } else {
+            view.updateAntennaPos(id, lon, lat, alt);
         }
-        view.updateAntennaPos(id, lon, lat, alt);
     } catch (error) {
         console.error("Error when trying to update antenna position - ", error);
     }
 };
 
 (window as any).setFlightPath = function(
+    id: string,
     longitudes: number[], 
     latitudes: number[], 
     altitudes: number[]
 ) {
-    const id = "QUADSATDRONE";
+    //const id = "QSDRONE";
     view.drawDeterminedFlightPath(id, longitudes, latitudes, altitudes);
 };
 
-(window as any).removeLiveFlightPath = function() {
-    const id = "QUADSATDRONE";
+(window as any).removeLiveFlightPath = function(id: string) {
+    //const id = "QSDRONE";
     view.removeLiveFlightPath(id);
 };
 
-(window as any).removeDeterminedFlightPath = function() {
-    const id = "QUADSATDRONE";
+(window as any).resetLiveFlightPath = function(id: string) {
+    //const id = "QSDRONE";
+    view.resetLiveFlightPath(id);
+};
+
+(window as any).removeDeterminedFlightPath = function(id: string) {
+    //const id = "QSDRONE";
     view.removeDeterminedFlightPath(id);
 };
 
@@ -196,42 +235,28 @@ function setupEventListeners() {
     view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
 };
 
-(window as any).initView = function() {
-    init();
-}
+(window as any).zoomTo = function(lon: number, lat: number, height: number, duration: number) {
+    //duration in seconds
+    view.zoomToCoordinates(lon, lat, height, duration);
+};
 
-//_______________TESTING_______________//
-init();
-
-//setTimeout(testMove, 5000);
-
-function testMove() {
-    const lonList = [10.32580470, 10.32585470, 10.32590470, 10.32595470, 10.32600470, 10.32605470, 10.32610470, 10.32615470, 10.32620470, 10.32625470];
-    const latList = [55.47177510, 55.47177550, 55.47177600, 55.47177650, 55.47177700, 55.47177750, 55.47177800, 55.47177850, 55.47177900, 55.47177950];
-    const altList = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50];
-    const id = "QUADSATDRONE"
-
-    view.addDrone(id, lonList[0], latList[0], altList[0]);
-    view.drawDeterminedFlightPath(id, lonList, latList, altList);
-
-    // Define the interval function
-    let index = 0;
-    const intervalID = setInterval(() => {
-        if (index >= lonList.length) {
-            clearInterval(intervalID); // Stop after the last location
-            //view.removeDeterminedFlightPath(id);
-            //view.removeLiveFlightPath(id);
-            return;
+(window as any).showScale = function (show: string) {
+    const powerScale = document.getElementById('powerScale');
+    if (powerScale) {
+        if (show == "true") {
+            powerScale.style.visibility = "visible";
+        } else if (show == "false") {
+            powerScale.style.visibility = "hidden";
         }
+    }
+};
 
-        // Retrieve the next longitude, latitude, and altitude from the separate lists
-        const lon = lonList[index];
-        const lat = latList[index];
-        const alt = altList[index];
+(window as any).initView = function () {
+    init();
+};
 
-        // Call moveDrone with the coordinates from the lists
-        view.updateDronePos(id, lon, lat, alt, "enabled");
+setupEventListeners();
 
-        index++; // Increment index to move to the next location
-    }, 1000); // 1-second interval
-}
+//init();
+
+

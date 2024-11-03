@@ -3,36 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <title>3D live Drone Map</title>
 </head>
 <body>
-    <div class="button-container">
+    <!-- <div class="button-container">
         <button id="addDroneBtn">Add drone</button>
         <button id="addAntennaBtn">Add antenna</button>
-    </div>
+    </div> -->
     <div class="controls">
-        <input type="checkbox" id="tilesBtn">
-        <label>Enhanced details</label>
-        <br>
-        <input type="checkbox" id="followDroneBtn" checked>
-        <label>Follow Drone</label>
-        <br>
-        <br>
-
-        <label for="longitudeInput">Longitude:</label>
-        <input type="number" id="longitudeInput" value="10.32595470">
-        <br>
-        
-        <label for="latitudeInput">Latitude:</label>
-        <input type="number" id="latitudeInput" value="55.47177510">
-        <br>
-
-        <label for="altitudeInput">Altitude:</label>
-        <input type="number" id="altitudeInput" value="50">
-        <br>
-
-        <button id="applyCoordinatesBtn">Apply coordinates</button>
+        <div class="checkbox-container">
+            <input type="checkbox" id="tilesBtn">
+            <label for="tilesBtn">Enhanced Details</label>
+        </div>
+        <div class="checkbox-container">
+            <input type="checkbox" id="followDroneBtn" checked>
+            <label for="followDroneBtn">Follow Drone</label>
+        </div>
+        <!-- <button id="testBtn">init</button> -->
     </div>
+    <div id="powerScale" class="power-scale" style="visibility: hidden;">
+        <div class="labels">
+            <span id="max-power">100</span>
+        </div>
+        <div class="color-gradient"></div>
+        <div class="labels">
+            <span id="min-power">0</span>
+        </div>
+    </div>
+    <!-- <div id="joystickContainer">
+        <div id="joystick"></div>
+    </div> -->
+    <div id="zoomControls">
+        <button id="zoomInBtn">+</button>
+        <button id="zoomOutBtn">-</button>
+      </div>
     <div id="cesiumContainer"></div>
+    <script src="bundle.js"></script>
+    <!-- <script src="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Cesium.js"></script> -->
 </body>
 </html>
