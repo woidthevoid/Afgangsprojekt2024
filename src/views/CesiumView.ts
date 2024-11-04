@@ -328,7 +328,7 @@ export class CesiumView {
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 60;
         this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
-        //this.startDroneSimulation();
+        this.startDroneSimulation();
     }
 
     public async addDrone2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {

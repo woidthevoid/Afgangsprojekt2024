@@ -7,10 +7,10 @@
     <title>3D live Drone Map</title>
 </head>
 <body>
-    <!-- <div class="button-container">
+    <div class="button-container">
         <button id="addDroneBtn">Add drone</button>
         <button id="addAntennaBtn">Add antenna</button>
-    </div> -->
+    </div>
     <div class="controls">
         <div class="checkbox-container">
             <input type="checkbox" id="tilesBtn">
@@ -24,7 +24,8 @@
     </div>
     <div id="powerScale" class="power-scale" style="visibility: hidden;">
         <div class="labels">
-            <span id="max-power">100</span>
+            <span id="ampl-title" style="font-weight: bold;">Amplitude</span>
+            <span id="max-power">0</span>
         </div>
         <div class="color-gradient"></div>
         <div class="labels">
@@ -37,7 +38,7 @@
     <div id="zoomControls">
         <button id="zoomInBtn">+</button>
         <button id="zoomOutBtn">-</button>
-      </div>
+    </div>
     <div id="cesiumContainer"></div>
     <script src="bundle.js"></script>
     <!-- <script src="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Cesium.js"></script> -->

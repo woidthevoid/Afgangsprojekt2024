@@ -1,6 +1,6 @@
 import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
-//import qsdrone from "../assets/qsdrone.glb"
-//import qspayload from "../assets/qspayload.glb"
+import qsdrone from "../assets/qsdrone.glb"
+import qspayload from "../assets/qspayload.glb"
 
 export class DroneEntity {
     public id: string;
@@ -16,8 +16,8 @@ export class DroneEntity {
         id: this.id,
         position: position,
         model: {
-          uri: "qrc:/map3d/LiveMap3D/assets/qsdrone.glb",
-          //uri: qsdrone,
+          //uri: "qrc:/map3d/LiveMap3D/assets/qsdrone.glb",
+          uri: qsdrone,
           scale: 0.6,
           minimumPixelSize: 15,
           //maximumScale: 200,
@@ -45,8 +45,8 @@ export class DroneEntity {
         id: this.payloadId,
         position: positionReference,
         model: {
-          uri: "qrc:/map3d/LiveMap3D/assets/qspayload.glb",
-          //uri: qspayload,
+          //uri: "qrc:/map3d/LiveMap3D/assets/qspayload.glb",
+          uri: qspayload,
           scale: 0.4,
           //minimumPixelSize: 32,
           //maximumScale: 100,
