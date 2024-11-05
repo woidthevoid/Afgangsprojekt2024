@@ -257,6 +257,6 @@ function setupEventListeners() {
 
 setupEventListeners();
 
-//init();
+init();
 
 
