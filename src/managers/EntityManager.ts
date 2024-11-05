@@ -1,29 +1,28 @@
-//import { Entity } from "cesium";
+import { Entity } from "cesium";
 import { AntennaController } from "../controllers/AntennaController";
 import { DroneController } from "../controllers/DroneController";
-import { BaseEntity } from "../entities/BaseEntity";
 
 //type Entity = BaseEntity;
 type Controller = AntennaController | DroneController;
 
 interface EntityControllerPair {
-  entity: any;
+  entity: Entity;
   controller: Controller;
 }
 
 export class EntityManager {
   private entityControllerMap: EntityControllerPair[] = [];
-  private flightPathPoints: any[] = [];
+  private flightPathPoints: Entity[] = [];
 
-  addEntity(entity: any, controller: Controller): void {
+  addEntity(entity: Entity, controller: Controller): void {
     this.entityControllerMap.push({ entity, controller });
   }
 
-  addPoint(entity: any): void {
+  addPoint(entity: Entity): void {
     this.flightPathPoints.push(entity);
   }
 
-  getPoints(): any[] {
+  getPoints(): Entity[] {
     return this.flightPathPoints
   }
 
@@ -35,7 +34,7 @@ export class EntityManager {
     this.flightPathPoints = [];
   }
 
-  getEntityById(id: string): any | undefined {
+  getEntityById(id: string): Entity | undefined {
     return this.entityControllerMap.find(pair => pair.entity.id === id)?.entity;
   }
 
@@ -47,7 +46,7 @@ export class EntityManager {
     this.entityControllerMap = this.entityControllerMap.filter(pair => pair.entity.id !== id);
   }
 
-  getAllEntities(): any[] {
+  getAllEntities(): Entity[] {
     return this.entityControllerMap.map(pair => pair.entity);
   }
 
