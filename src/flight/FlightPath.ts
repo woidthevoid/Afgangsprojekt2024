@@ -1,4 +1,22 @@
-import { Cartesian3, Color, Entity, GeometryInstance, PolylineColorAppearance, PolylineGeometry, PolylineGraphics, Primitive, Viewer } from "cesium";
+import { 
+    Cartesian3, 
+    Color, 
+    ColorGeometryInstanceAttribute, 
+    ConstantPositionProperty, 
+    ConstantProperty, 
+    Entity, 
+    GeometryInstance, 
+    HorizontalOrigin, 
+    LabelGraphics, 
+    LabelStyle, 
+    NearFarScalar, 
+    PolylineColorAppearance, 
+    PolylineGeometry, 
+    PolylineGraphics, 
+    Primitive, 
+    VerticalOrigin, 
+    Viewer 
+} from "cesium";
 import { Terrain } from "./Terrain";
 
 export class FlightPath {
@@ -9,10 +27,13 @@ export class FlightPath {
     private livePathPowers: number[] = [];
     private livePathPositions: Cartesian3[] = [];
     private livePathColors: Color[] = [];
+    private determinedPathPositions: Cartesian3[] = [];
     private livePathPrimitive: Primitive | null = null;
     private determinedPathEntity: Entity | null = null;
     private determinedStartPoint: Entity | null = null;
     private determinedEndPoint: Entity | null = null;
+    private distanceLinePrimitive: Primitive | null = null;
+    private distanceLabel: Entity | null = null;
 
     constructor(viewer: Viewer) {
         this.terrain = Terrain.getInstance(viewer);
@@ -40,7 +61,7 @@ export class FlightPath {
             this.livePathColors = this.livePathPowers.map((powerAtPosition) => this.calculateColor(powerAtPosition));
             this.updatePowerScale(this.minPower, this.maxPower);
         } else {
-            this.livePathColors.push(Color.BLUE);
+            this.livePathColors.push(Color.WHITE);
         }
     
         // Add the new position
@@ -54,6 +75,95 @@ export class FlightPath {
         if (this.livePathPositions.length > 1) {
             this.createLivePathPrimitive();
         }
+    }
+
+    public updateDistanceLine(lon: number, lat: number, alt: number) {
+        if (!this.determinedPathEntity) {
+            return;
+        }
+
+        const dronePosition = Cartesian3.fromDegrees(lon, lat, alt);
+
+        // Find the closest point on the determined path to the current drone position
+        const nearestPoint = this.getNearestPointOnPath(dronePosition, this.determinedPathPositions);
+        const distance = Cartesian3.distance(dronePosition, nearestPoint);
+
+        // Remove the previous line primitive if it exists
+        if (this.distanceLinePrimitive) {
+            this.viewer.scene.primitives.remove(this.distanceLinePrimitive);
+        }
+
+        // Create a new polyline geometry between the drone position and the nearest point
+        const geometry = new PolylineGeometry({
+            positions: [dronePosition, nearestPoint],
+            width: 2.0,
+            vertexFormat: PolylineColorAppearance.VERTEX_FORMAT,
+        });
+
+        const geometryInstance = new GeometryInstance({
+            geometry: geometry,
+            attributes: {
+                color: ColorGeometryInstanceAttribute.fromColor(Color.YELLOW)
+            }
+        });
+
+        this.distanceLinePrimitive = new Primitive({
+            geometryInstances: geometryInstance,
+            appearance: new PolylineColorAppearance({
+                translucent: false
+            }),
+            asynchronous: false
+        });
+
+        this.viewer.scene.primitives.add(this.distanceLinePrimitive);
+
+        // Calculate the midpoint for placing the label
+        const midpoint = Cartesian3.midpoint(dronePosition, nearestPoint, new Cartesian3());
+        
+
+        // Add or update the distance label
+        if (this.distanceLabel) {
+            // Update the label position and text if it already exists
+            this.distanceLabel.position = new ConstantPositionProperty(midpoint);
+            this.distanceLabel.label!.text = new ConstantProperty(`${distance.toFixed(2)} m`);
+        } else {
+            // Create a new label if it doesn't exist
+            this.distanceLabel = this.viewer.entities.add({
+                position: midpoint,
+                label: new LabelGraphics({
+                    text: `${distance.toFixed(2)} m`,
+                    font: '14px sans-serif',
+                    fillColor: Color.YELLOW,
+                    outlineColor: Color.BLACK,
+                    outlineWidth: 2,
+                    style: LabelStyle.FILL_AND_OUTLINE,
+                    showBackground: true,
+                    backgroundColor: new Color(0, 0, 0, 0.5),
+                    verticalOrigin: VerticalOrigin.CENTER,
+                    horizontalOrigin: HorizontalOrigin.CENTER,
+                    eyeOffset: new Cartesian3(0, 0, -5),  // Slight offset to improve visibility
+                    scaleByDistance: new NearFarScalar(
+                        100.0, 1.0,
+                        1000.0, 0
+                    )
+                })
+            });
+        }
+    }
+
+    private getNearestPointOnPath(position: Cartesian3, path: Cartesian3[]): Cartesian3 {
+        let closestPoint = path[0];
+        let minDistance = Cartesian3.distance(position, closestPoint);
+
+        for (const pathPoint of path) {
+            const distance = Cartesian3.distance(position, pathPoint);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPoint = pathPoint;
+            }
+        }
+
+        return closestPoint;
     }
 
     private createLivePathPrimitive() {
@@ -120,6 +230,7 @@ export class FlightPath {
                 this.viewer.entities.remove(entity);
             }
         });
+        this.determinedPathPositions = [];
     }
 
     public async updateDeterminedPath(lons: number[], lats: number[], alts: number[]) {
@@ -135,12 +246,14 @@ export class FlightPath {
             }
         });
 
-        const correctedAlts = await Promise.all(
-            alts.map(async (altitude, _i) => {
-                const terrainHeight = this.terrain.getGroundRef();
-                const updatedAltitude = terrainHeight + altitude;
-                return updatedAltitude;
-            })
+        const terrainHeight = this.terrain.getGroundRef();
+        const correctedAlts = alts.map((altitude) => {
+            const updatedAltitude = terrainHeight + altitude;
+            return updatedAltitude;
+        });
+
+        this.determinedPathPositions = lons.map((longitude, index) => 
+            Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
         );
 
         const positions = lons.map((longitude, index) => 
@@ -164,6 +277,10 @@ export class FlightPath {
             point: {
                 color: Color.GREEN,
                 pixelSize: 10,
+                scaleByDistance: new NearFarScalar(
+                    100.0, 1.0,
+                    1000.0, 0
+                )
             }
         });
 
@@ -173,7 +290,11 @@ export class FlightPath {
             position: Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], correctedAlts[correctedAlts.length - 1]),
             point: {
                 color: Color.RED,
-                pixelSize: 10
+                pixelSize: 10,
+                scaleByDistance: new NearFarScalar(
+                    100.0, 1.0,
+                    1000.0, 0
+                )
             }
         });
     }

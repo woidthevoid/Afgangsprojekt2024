@@ -20,7 +20,7 @@ export class DroneController {
     }
 
     setDrone(drone: Entity) {
-        this.drone = drone
+        this.drone = drone;
         console.log("DroneController.ts: drone has been set");
     }
 
@@ -31,7 +31,11 @@ export class DroneController {
     drawLiveFlightPath (lon: number, lat: number, alt: number, power: number | null = null) {
         setTimeout(() => {
             this.flightPath?.updateLivePath(lon, lat, alt, power);
-        }, 600);
+        }, 300);
+    }
+
+    drawDistanceLine(lon: number, lat: number, alt: number) {
+        this.flightPath?.updateDistanceLine(lon, lat, alt);
     }
 
     setDeterminedFlightPath(lons: number[], lats: number[], alts: number[]) {
@@ -52,10 +56,11 @@ export class DroneController {
 
     testline(lon: number, lat: number, alt: number, power: number) {
         const color = this.getColorForPower(power);
-        const animationTime = 0.5
+        const animationTime = 0.3
         setTimeout(() => {
         this.flightPath?.updateLivePath(lon, lat, alt, power);
-    }, animationTime * 1000 + 100);
+        this.drawDistanceLine(lon,lat,alt);
+        }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }
 
