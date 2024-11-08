@@ -60,6 +60,7 @@ export class DroneController {
         setTimeout(() => {
         this.flightPath?.updateLivePath(lon, lat, alt, power);
         this.drawDistanceLine(lon,lat,alt);
+        this.flightPath?.updateHeadingArrow(lon, lat, alt, 20)
         }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }

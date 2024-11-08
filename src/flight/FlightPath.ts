@@ -15,6 +15,7 @@ import {
     PolylineGraphics, 
     Primitive, 
     VerticalOrigin, 
+    Math as CesiumMath,
     Viewer 
 } from "cesium";
 import { Terrain } from "./Terrain";
@@ -34,6 +35,7 @@ export class FlightPath {
     private determinedEndPoint: Entity | null = null;
     private distanceLinePrimitive: Primitive | null = null;
     private distanceLabel: Entity | null = null;
+    private headingLinePrimitive: Primitive | null = null;
 
     constructor(viewer: Viewer) {
         this.terrain = Terrain.getInstance(viewer);
@@ -297,5 +299,63 @@ export class FlightPath {
                 )
             }
         });
+    }
+
+    public updateHeadingArrow(lon: number, lat: number, alt: number, heading: number) {
+        const length = 5;  // Length of the main line
+        const arrowHeadLength = 1;  // Length of each side of the arrowhead
+        const headingRadians = CesiumMath.toRadians(heading);
+        // Calculate the main line start and end points
+        const position = Cartesian3.fromDegrees(lon, lat, alt);
+        const endPoint = new Cartesian3(
+            position.x + length * Math.cos(headingRadians),
+            position.y + length * Math.sin(headingRadians),
+            position.z
+        );
+
+        // Calculate the left and right points for the arrowhead
+        const angleOffset = CesiumMath.toRadians(30);  // 30-degree offset for arrowhead
+        const leftPoint = new Cartesian3(
+            endPoint.x - arrowHeadLength * Math.cos(headingRadians + angleOffset),
+            endPoint.y - arrowHeadLength * Math.sin(headingRadians + angleOffset),
+            endPoint.z
+        );
+
+        const rightPoint = new Cartesian3(
+            endPoint.x - arrowHeadLength * Math.cos(headingRadians - angleOffset),
+            endPoint.y - arrowHeadLength * Math.sin(headingRadians - angleOffset),
+            endPoint.z
+        );
+
+        // Remove the previous primitive if it exists
+        if (this.headingLinePrimitive) {
+            this.viewer.scene.primitives.remove(this.headingLinePrimitive);
+        }
+
+        // Create new geometry for the arrow shape
+        const geometry = new PolylineGeometry({
+            positions: [position, endPoint, leftPoint, endPoint, rightPoint],
+            width: 3.0,
+            vertexFormat: PolylineColorAppearance.VERTEX_FORMAT
+        });
+
+        const geometryInstance = new GeometryInstance({
+            geometry: geometry,
+            attributes: {
+                color: ColorGeometryInstanceAttribute.fromColor(Color.GREENYELLOW)
+            }
+        });
+
+        // Create the arrow as a primitive
+        this.headingLinePrimitive = new Primitive({
+            geometryInstances: geometryInstance,
+            appearance: new PolylineColorAppearance({
+                translucent: false
+            }),
+            asynchronous: false
+        });
+
+        // Add the new primitive to the viewer
+        this.viewer.scene.primitives.add(this.headingLinePrimitive);
     }
 }
