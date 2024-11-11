@@ -377,7 +377,7 @@ export class CesiumView {
             lats.push(newLat);
             alts.push(newAlt);
         }
-        this.droneController.setDeterminedFlightPath(lons,lats,alts)
+        this.droneController.setDeterminedFlightPath(lons,lats,alts);
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
