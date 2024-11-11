@@ -244,16 +244,27 @@ export class CesiumView {
         }
     }
 
-    updateDronePos(id: string, lon: number, lat: number, alt: number, flightPathEnabled: string = "disabled", power: number | null = null) {
+    updateDronePos(
+        id: string, 
+        lon: number, 
+        lat: number, 
+        alt: number, 
+        flightPathEnabled: string = "disabled", 
+        power: number | null = null, 
+        showDistance: boolean = false
+    ) {
         if (!this.viewer) {
             return console.error("Viewer is null");
         }
         try {
             const drone = this.entityManager.getControllerByEntityId(id);
             if (drone instanceof DroneController) {
-                drone.moveDrone(lon, lat, alt, 0.5);
+                drone.moveDrone(lon, lat, alt, 0.3);
                 if (flightPathEnabled == "enabled") {
                     drone.drawLiveFlightPath(lon, lat, alt, power);
+                }
+                if (showDistance) {
+                    drone.drawDistanceLine(lon, lat, alt);
                 }
             }
         } catch (error) {
@@ -346,6 +357,27 @@ export class CesiumView {
         this.droneController?.setPayload(payloadEntity)
         this.droneController?.payloadController.setViewer(this.viewer)
         this.droneController?.setViewer(this.viewer)
+        this.entityManager.addEntity(this.drone.getEntity(), this.droneController)
+
+        const lons: number[] = [];
+        const lats: number[] = [];
+        const alts: number[] = [];
+
+        const radius = 0.001;
+        const altitudeVariation = 5;
+
+        for (let i = 0; i <= 36; i++) {
+            const angle = (i * 10) * (Math.PI / 180); // Convert to radians
+
+            const newLon = initialLongitude + radius * Math.cos(angle);
+            const newLat = initialLatitude + radius * Math.sin(angle);
+            const newAlt = 50 + initialAltitude + altitudeVariation * Math.sin(angle);
+
+            lons.push(newLon);
+            lats.push(newLat);
+            alts.push(newAlt);
+        }
+        this.droneController.setDeterminedFlightPath(lons,lats,alts);
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
