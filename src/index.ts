@@ -161,7 +161,7 @@ function setupEventListeners() {
     lat: number, 
     alt: number, 
     flightPathEnabled: string = "disabled", 
-    power: number | null = null
+    spectrumData: number | null = null
 ) {
     //flightPathEnabled: "enabled" || "disabled"
     //const id = "QSDRONE"
@@ -171,13 +171,13 @@ function setupEventListeners() {
             if (!view.entityManager.getEntityById(id)) {
                 view.addDrone(id, lon, lat, realAlt);
             } else {
-                const powerScale = document.getElementById('powerScale');
-                if (power != null && powerScale) {
-                    powerScale.style.visibility = "visible";
-                } else if (powerScale) {
-                    powerScale.style.visibility = "hidden";
+                const spectrumScale = document.getElementById('spectrumScale');
+                if (spectrumData != null && spectrumScale) {
+                    spectrumScale.style.visibility = "visible";
+                } else if (spectrumScale) {
+                    spectrumScale.style.visibility = "hidden";
                 }
-                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, power);
+                view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, spectrumData);
             }
         } catch (error) {
             console.error("Error when trying to update drone position - ", error);
@@ -241,12 +241,12 @@ function setupEventListeners() {
 };
 
 (window as any).showScale = function (show: string) {
-    const powerScale = document.getElementById('powerScale');
-    if (powerScale) {
+    const spectrumScale = document.getElementById('spectrumScale');
+    if (spectrumScale) {
         if (show == "true") {
-            powerScale.style.visibility = "visible";
+            spectrumScale.style.visibility = "visible";
         } else if (show == "false") {
-            powerScale.style.visibility = "hidden";
+            spectrumScale.style.visibility = "hidden";
         }
     }
 };

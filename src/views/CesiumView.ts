@@ -250,7 +250,7 @@ export class CesiumView {
         lat: number, 
         alt: number, 
         flightPathEnabled: string = "disabled", 
-        power: number | null = null, 
+        spectrumData: number | null = null, 
         showDistance: boolean = false
     ) {
         if (!this.viewer) {
@@ -261,7 +261,7 @@ export class CesiumView {
             if (drone instanceof DroneController) {
                 drone.moveDrone(lon, lat, alt, 0.3);
                 if (flightPathEnabled == "enabled") {
-                    drone.drawLiveFlightPath(lon, lat, alt, power);
+                    drone.drawLiveFlightPath(lon, lat, alt, spectrumData);
                 }
                 if (showDistance) {
                     drone.drawDistanceLine(lon, lat, alt);

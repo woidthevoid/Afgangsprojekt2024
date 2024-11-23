@@ -39,7 +39,7 @@ html, body {
     color: rgba(255, 255, 255, 0.8);
 }
 
-.power-scale {
+.spectrum-scale {
     position: absolute;
     top: 50%;
     right: 10px;

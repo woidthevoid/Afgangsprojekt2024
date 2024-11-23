@@ -23,9 +23,9 @@ import { Terrain } from "./Terrain";
 export class FlightPath {
     private viewer: Viewer;
     private terrain: Terrain;
-    private minPower: number = Number.POSITIVE_INFINITY;
-    private maxPower: number = Number.NEGATIVE_INFINITY;
-    private livePathPowers: number[] = [];
+    private minSpectrum: number = Number.POSITIVE_INFINITY;
+    private maxSpectrum: number = Number.NEGATIVE_INFINITY;
+    private livePathSpectrum: number[] = [];
     private livePathPositions: Cartesian3[] = [];
     private livePathColors: Color[] = [];
     private determinedPathPositions: Cartesian3[] = [];
@@ -42,26 +42,26 @@ export class FlightPath {
         this.viewer = viewer;
     }
 
-    private calculateColor(power: number): Color {
-        // Calculate a color based on the power value
+    private calculateColor(spectrum: number): Color {
+        // Calculate a color based on the spectrum value
         // Red shade = high value, blue shade = low value
-        const normalizedValue = (power - this.minPower) / (this.maxPower - this.minPower);
+        const normalizedValue = (spectrum - this.minSpectrum) / (this.maxSpectrum - this.minSpectrum);
         return Color.lerp(Color.BLUE.withAlpha(1.0), Color.RED.withAlpha(1.0), normalizedValue, new Color());
     }
 
-    public updateLivePath(lon: number, lat: number, alt: number, power: number | null = null) {
+    public updateLivePath(lon: number, lat: number, alt: number, spectrum: number | null = null) {
         const newPosition = Cartesian3.fromDegrees(lon, lat, alt);
-        // Track power range for dynamic coloring
-        if (power !== null) {
-            this.minPower = Math.min(this.minPower, power);
-            this.maxPower = Math.max(this.maxPower, power);
+        // Track spectrum range for dynamic coloring
+        if (spectrum !== null) {
+            this.minSpectrum = Math.min(this.minSpectrum, spectrum);
+            this.maxSpectrum = Math.max(this.maxSpectrum, spectrum);
         
-            // Store power output for each position
-            this.livePathPowers.push(power);
+            // Store spectrum output for each position
+            this.livePathSpectrum.push(spectrum);
         
             // Recalculate colors for all points
-            this.livePathColors = this.livePathPowers.map((powerAtPosition) => this.calculateColor(powerAtPosition));
-            this.updatePowerScale(this.minPower, this.maxPower);
+            this.livePathColors = this.livePathSpectrum.map((spectrumAtPosition) => this.calculateColor(spectrumAtPosition));
+            this.updateSpectrumScale(this.minSpectrum, this.maxSpectrum);
         } else {
             this.livePathColors.push(Color.WHITE);
         }
@@ -198,13 +198,13 @@ export class FlightPath {
         this.viewer.scene.primitives.add(this.livePathPrimitive);
     }
 
-    private updatePowerScale(minPower: number, maxPower: number) {
-        const minPowerElement = document.getElementById('min-power');
-        const maxPowerElement = document.getElementById('max-power');
+    private updateSpectrumScale(minSpectrum: number, maxSpectrum: number) {
+        const minSpectrumElement = document.getElementById('min-power');
+        const maxSpectrumElement = document.getElementById('max-power');
         
-        if (minPowerElement && maxPowerElement) {
-            minPowerElement.textContent = minPower.toFixed(1);
-            maxPowerElement.textContent = maxPower.toFixed(1);
+        if (minSpectrumElement && maxSpectrumElement) {
+            minSpectrumElement.textContent = minSpectrum.toFixed(1);
+            maxSpectrumElement.textContent = maxSpectrum.toFixed(1);
         }
     }
 
@@ -218,10 +218,10 @@ export class FlightPath {
         this.removeLivePath();
         this.livePathPositions = [];
         this.livePathColors = [];
-        this.livePathPowers = [];
+        this.livePathSpectrum = [];
         this.livePathPrimitive = null;
-        this.minPower = Number.POSITIVE_INFINITY;
-        this.maxPower = Number.NEGATIVE_INFINITY;
+        this.minSpectrum = Number.POSITIVE_INFINITY;
+        this.maxSpectrum = Number.NEGATIVE_INFINITY;
 
     }
 
