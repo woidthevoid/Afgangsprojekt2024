@@ -236,7 +236,9 @@ export class CesiumView {
             this.viewer.trackedEntity = droneEntity;
             this.entityManager.addEntity(droneEntity, droneController)
             this.payloadTrackAntenna(id);
+            this.drone = drone;
             console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
+            console.log('CesiumView.ts: Drone Entity details:', droneEntity);
             return true;
         } catch (error) {
             console.error("Failed to add drone - ", error);
@@ -657,5 +659,9 @@ export class CesiumView {
             movementDuration += 200; // Increase by the interval time (200ms)
     
         }, 200); // Update every 200 milliseconds
+    }
+
+    getDroneEntity() {
+        return this.drone ? this.drone.getEntity() : null;
     }
 }

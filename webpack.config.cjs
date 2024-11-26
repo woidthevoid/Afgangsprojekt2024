@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
   devtool: false,
@@ -44,6 +45,7 @@ module.exports = {
       inject: false,
     }),
     new Dotenv(),
+    new NodePolyfillPlugin(),
   ],
   devServer: {
     static: {
