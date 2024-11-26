@@ -28,9 +28,9 @@ export class DroneController {
         this.payloadController.setPayload(payload);
     }
 
-    drawLiveFlightPath (lon: number, lat: number, alt: number, power: number | null = null) {
+    drawLiveFlightPath (lon: number, lat: number, alt: number, spectrumData: number | null = null) {
         setTimeout(() => {
-            this.flightPath?.updateLivePath(lon, lat, alt, power);
+            this.flightPath?.updateLivePath(lon, lat, alt, spectrumData);
         }, 300);
     }
 
@@ -54,11 +54,11 @@ export class DroneController {
         this.flightPath?.removeDeterminedPath();
     }
 
-    testline(lon: number, lat: number, alt: number, power: number) {
-        const color = this.getColorForPower(power);
+    testline(lon: number, lat: number, alt: number, spectrumData: number) {
+        const color = this.getColorForSpectrum(spectrumData);
         const animationTime = 0.3
         setTimeout(() => {
-        this.flightPath?.updateLivePath(lon, lat, alt, power);
+        this.flightPath?.updateLivePath(lon, lat, alt, spectrumData);
         this.drawDistanceLine(lon,lat,alt);
         this.flightPath?.updateHeadingArrow(lon, lat, alt, 20)
         }, animationTime * 1000 + 100);
@@ -182,9 +182,9 @@ export class DroneController {
         this.animationFrameId = requestAnimationFrame(moveEntity);
     }
 
-    getColorForPower(power: number): Color {
-        const normalizedPower = power / 100;
-        return Color.fromHsl((1 - normalizedPower) * 0.66, 1.0, 0.5);
+    getColorForSpectrum(spectrum: number): Color {
+        const normalizedSpectrum = spectrum / 100;
+        return Color.fromHsl((1 - normalizedSpectrum) * 0.66, 1.0, 0.5);
     }
 
     setDronePosition(longitude: number, latitude: number, altitude: number) {
