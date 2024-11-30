@@ -18,6 +18,7 @@ export class AntennaEntity {
             position: position,
             orientation: orientation,
             model: {
+                //uri: "qrc:/map/LiveMap/assets/antenna.glb",
                 uri: antenna,
                 scale: 0.8,
                 minimumPixelSize: 25,

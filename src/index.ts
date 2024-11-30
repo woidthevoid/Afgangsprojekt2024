@@ -4,6 +4,22 @@ import { CesiumView } from "./views/CesiumView";
 import { Terrain } from './flight/Terrain';
 import { Viewer } from 'cesium';
 
+declare global {
+    interface Window {
+        addDrone: (id: string, lon: number, lat: number, alt: number) => Promise<void>;
+        addAntenna: (id: string, lon: number, lat: number, alt: number, heading?: number, pitch?: number) => void;
+        updateDronePosition: (id: string, lon: number, lat: number, alt: number, flightPathEnabled?: string, spectrumData?: number) => Promise<void>;
+        updateAntennaPosition: (lon: number, lat: number, alt: number, heading?: number, pitch?: number) => void;
+        setFlightPath: (id: string,longitudes: number[], latitudes: number[], altitudes: number[]) => void;
+        zoomTo: (lon: number, lat: number, height: number, duration: number) => void;
+        removeLiveFlightPath: (id: string) => void;
+        resetLiveFlightPath: (id: string) => void;
+        removeDeterminedFlightPath: (id: string) => void;
+        showScale: (show: string) => void;
+        initView: () => void;
+    }
+}
+
 (window as any).CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium";
 const view = new CesiumView('cesiumContainer');
 let antennaAdded = false;
@@ -134,7 +150,7 @@ function setupEventListeners() {
     }
 };
 
-(window as any).addDrone = async function(id: string, lon: number, lat: number, alt: number) {
+window.addDrone = async function(id: string, lon: number, lat: number, alt: number) {
     if (terrain) {
         const groundRef = await terrain.setGroundRef(lon, lat);
         if (groundRef !== undefined) {
@@ -147,7 +163,7 @@ function setupEventListeners() {
     }
 };
 
-(window as any).addAntenna = function(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
+window.addAntenna = function(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
     try {
         view.addAntenna(id, lon, lat, alt, heading, pitch);
     } catch (error) {
@@ -155,7 +171,7 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateDronePosition = async function(
+window.updateDronePosition = async function(
     id: string, 
     lon: number, 
     lat: number, 
@@ -172,7 +188,7 @@ function setupEventListeners() {
                 view.addDrone(id, lon, lat, realAlt);
             } else {
                 const spectrumScale = document.getElementById('spectrumScale');
-                if (spectrumData != null && spectrumScale) {
+                if (spectrumData != undefined && spectrumScale) {
                     spectrumScale.style.visibility = "visible";
                 } else if (spectrumScale) {
                     spectrumScale.style.visibility = "hidden";
@@ -187,7 +203,7 @@ function setupEventListeners() {
     }
 };
 
-(window as any).updateAntennaPosition = function(lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
+window.updateAntennaPosition = function(lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
     const id = "QSANTENNA"
     try {
         if (!antennaAdded) {
@@ -201,7 +217,7 @@ function setupEventListeners() {
     }
 };
 
-(window as any).setFlightPath = function(
+window.setFlightPath = function(
     id: string,
     longitudes: number[], 
     latitudes: number[], 
@@ -211,17 +227,17 @@ function setupEventListeners() {
     view.drawDeterminedFlightPath(id, longitudes, latitudes, altitudes);
 };
 
-(window as any).removeLiveFlightPath = function(id: string) {
+window.removeLiveFlightPath = function(id: string) {
     //const id = "QSDRONE";
     view.removeLiveFlightPath(id);
 };
 
-(window as any).resetLiveFlightPath = function(id: string) {
+window.resetLiveFlightPath = function(id: string) {
     //const id = "QSDRONE";
     view.resetLiveFlightPath(id);
 };
 
-(window as any).removeDeterminedFlightPath = function(id: string) {
+window.removeDeterminedFlightPath = function(id: string) {
     //const id = "QSDRONE";
     view.removeDeterminedFlightPath(id);
 };
@@ -235,12 +251,12 @@ function setupEventListeners() {
     view.createFlightPathFromData(timestamps,longitudes, latitudes, altitudes);
 };
 
-(window as any).zoomTo = function(lon: number, lat: number, height: number, duration: number) {
+window.zoomTo = function(lon: number, lat: number, height: number, duration: number) {
     //duration in seconds
     view.zoomToCoordinates(lon, lat, height, duration);
 };
 
-(window as any).showScale = function (show: string) {
+window.showScale = function (show: string) {
     const spectrumScale = document.getElementById('spectrumScale');
     if (spectrumScale) {
         if (show == "true") {
@@ -251,12 +267,12 @@ function setupEventListeners() {
     }
 };
 
-(window as any).initView = function () {
+window.initView = function () {
     init();
 };
 
 setupEventListeners();
 
-//init();
+init();
 
 
