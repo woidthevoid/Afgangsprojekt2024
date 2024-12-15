@@ -1,6 +1,6 @@
 import puppeteer, { Browser, Page } from 'puppeteer';
 
-describe('Cesium test', () => {
+describe('End to End tests', () => {
   let browser: Browser;
   let page: Page;
 
@@ -55,5 +55,26 @@ describe('Cesium test', () => {
     expect(droneDetails).toBe('drone-id');
   }, 60000);
 
+  test('should add antenna to the map', async () => {
+    const addAntennaBtnPresent = await page.evaluate(() => {
+      const addAntennaBtn = document.getElementById('addAntennaBtn');
+      return !!addAntennaBtn;
+    });
+
+    expect(addAntennaBtnPresent).toBe(true);
+
+    await page.click('#addAntennaBtn');
+
+    const antennaDetails = await page.evaluate(() => {
+      const view = (window as any).view;
+      if(!view) {
+        return null;
+      }
+      const antennaEntity = view.getAntennaEntity();
+      return antennaEntity ? antennaEntity.id : null;
+    });
+
+    expect(antennaDetails).toBe('antenna-entity');
+  }, 60000);
 
 });

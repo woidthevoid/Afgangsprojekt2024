@@ -664,4 +664,8 @@ export class CesiumView {
     getDroneEntity() {
         return this.drone ? this.drone.getEntity() : null;
     }
+
+    getAntennaEntity() {
+        return this.antenna ? this.antenna.getEntity() : null;
+    }
 }
