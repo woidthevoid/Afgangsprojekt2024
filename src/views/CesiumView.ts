@@ -26,7 +26,7 @@ import { EntityManager } from "../managers/EntityManager";
 
 export class CesiumView {
     private tileset: Cesium3DTileset | null = null;
-    private viewer: Viewer | null = null;
+    public viewer: Viewer | null = null;
     private drone: DroneEntity | null = null;
     private antenna: AntennaEntity | null = null;
     private pointingLine: Entity | null = null;

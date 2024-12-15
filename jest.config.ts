@@ -7,4 +7,10 @@ module.exports = {
       },
     },
     testMatch: ['**/*.test.ts'],
+    moduleNameMapper: {
+      "\\.(glb)$": "<rootDir>/src/__mocks__/fileMock.ts",
+    },
+    transform: {
+      "^.+\\.ts$": "ts-jest"
+    },
   };

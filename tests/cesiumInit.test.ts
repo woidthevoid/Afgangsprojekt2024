@@ -6,7 +6,7 @@ describe('Cesium test', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      headless: false, // Set to true if you want to run tests in headless mode
+      headless: true, // Set to true if you want to run tests in headless mode
       slowMo: 50, // Slow down by 50ms to see the actions
     });
     page = await browser.newPage();
