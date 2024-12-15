@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { CesiumView } from "../src/views/CesiumView";
 import { Viewer } from "cesium";
 
