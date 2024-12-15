@@ -8,8 +8,6 @@
     "test": "jest",
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",
-    "run-puppeteer": "node --loader ts-node/esm runPuppeteer.ts",
-    "start:dev": "webpack serve",
     "test:puppeteer": "wait-on http://localhost:9000 && jest --config jest.config.ts"
   },
   "keywords": [],
