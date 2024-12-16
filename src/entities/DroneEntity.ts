@@ -16,6 +16,7 @@ export class DroneEntity {
         id: this.id,
         position: position,
         model: {
+          //uri: "qrc:/map/LiveMap/assets/drone3.glb",
           uri: drone,
           scale: 0.6,
           minimumPixelSize: 15,
@@ -44,6 +45,7 @@ export class DroneEntity {
         id: this.payloadId,
         position: positionReference,
         model: {
+          //uri: "qrc:/map/LiveMap/assets/camera.glb",
           uri: camera,
           scale: 0.4,
           //minimumPixelSize: 32,
