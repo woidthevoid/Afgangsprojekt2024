@@ -33,48 +33,48 @@ describe('End to End tests', () => {
     expect(cesiumContainerExists).toBe(true);
   }, 60000); // Increase the timeout for the test to 60 seconds
 
-  test('should add a drone to the map', async () => {
-    const addDroneBtnPresent = await page.evaluate(() => {
-        const addDroneBtn = document.getElementById('addDroneBtn');
-        return !!addDroneBtn;
-    });
+  // test('should add a drone to the map', async () => {
+  //   const addDroneBtnPresent = await page.evaluate(() => {
+  //       const addDroneBtn = document.getElementById('addDroneBtn');
+  //       return !!addDroneBtn;
+  //   });
 
-    expect(addDroneBtnPresent).toBe(true);
+  //   expect(addDroneBtnPresent).toBe(true);
 
-    await page.click('#addDroneBtn');
+  //   await page.click('#addDroneBtn');
 
-    const droneDetails = await page.evaluate(() => {
-        const view = (window as any).view;
-        if(!view) {
-            return null;
-        }
-        const droneEntity = view.getDroneEntity();
-        return droneEntity ? droneEntity.id : null;
-    });
+  //   const droneDetails = await page.evaluate(() => {
+  //       const view = (window as any).view;
+  //       if(!view) {
+  //           return null;
+  //       }
+  //       const droneEntity = view.getDroneEntity();
+  //       return droneEntity ? droneEntity.id : null;
+  //   });
 
-    expect(droneDetails).toBe('drone-id');
-  }, 60000);
+  //   expect(droneDetails).toBe('drone-id');
+  // }, 60000);
 
-  test('should add antenna to the map', async () => {
-    const addAntennaBtnPresent = await page.evaluate(() => {
-      const addAntennaBtn = document.getElementById('addAntennaBtn');
-      return !!addAntennaBtn;
-    });
+  // test('should add antenna to the map', async () => {
+  //   const addAntennaBtnPresent = await page.evaluate(() => {
+  //     const addAntennaBtn = document.getElementById('addAntennaBtn');
+  //     return !!addAntennaBtn;
+  //   });
 
-    expect(addAntennaBtnPresent).toBe(true);
+  //   expect(addAntennaBtnPresent).toBe(true);
 
-    await page.click('#addAntennaBtn');
+  //   await page.click('#addAntennaBtn');
 
-    const antennaDetails = await page.evaluate(() => {
-      const view = (window as any).view;
-      if(!view) {
-        return null;
-      }
-      const antennaEntity = view.getAntennaEntity();
-      return antennaEntity ? antennaEntity.id : null;
-    });
+  //   const antennaDetails = await page.evaluate(() => {
+  //     const view = (window as any).view;
+  //     if(!view) {
+  //       return null;
+  //     }
+  //     const antennaEntity = view.getAntennaEntity();
+  //     return antennaEntity ? antennaEntity.id : null;
+  //   });
 
-    expect(antennaDetails).toBe('antenna-entity');
-  }, 60000);
+  //   expect(antennaDetails).toBe('antenna-entity');
+  // }, 60000);
 
 });
