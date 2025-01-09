@@ -1,6 +1,6 @@
 import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
-import drone from "../assets/qsdrone.glb"
-import payload from "../assets/qspayload3.glb"
+import drone from "../assets/testdrone.glb"
+import payload from "../assets/camera2.glb"
 
 export class DroneEntity {
     public id: string;

@@ -1,5 +1,5 @@
 import { Cartesian3, ConstantPositionProperty, Entity, HeightReference, Math as CesiumMath, HeadingPitchRoll, Transforms } from "cesium";
-import antenna from "../assets/qsantenna.glb"
+import antenna from "../assets/testantenna.glb"
 
 export class AntennaEntity {
     public id: string;
