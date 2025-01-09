@@ -273,6 +273,6 @@ window.initView = function () {
 
 setupEventListeners();
 
-init();
+//init();
 
 
