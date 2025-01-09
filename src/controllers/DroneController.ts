@@ -59,8 +59,8 @@ export class DroneController {
         const animationTime = 0.3
         setTimeout(() => {
         this.flightPath?.updateLivePath(lon, lat, alt, spectrumData);
-        this.drawDistanceLine(lon,lat,alt);
-        this.flightPath?.updateHeadingArrow(lon, lat, alt, 20)
+        //this.drawDistanceLine(lon,lat,alt);
+        //this.flightPath?.updateHeadingArrow(lon, lat, alt, 20)
         }, animationTime * 1000 + 100);
         this.moveDrone(lon, lat, alt, animationTime);
     }

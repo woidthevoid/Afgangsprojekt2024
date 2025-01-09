@@ -358,6 +358,7 @@ export class CesiumView {
         this.droneController?.payloadController.setViewer(this.viewer)
         this.droneController?.setViewer(this.viewer)
         this.entityManager.addEntity(this.drone.getEntity(), this.droneController)
+        this.payloadTrackAntenna("drone-id");
 
         const lons: number[] = [];
         const lats: number[] = [];
@@ -383,6 +384,7 @@ export class CesiumView {
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {
         this.antenna = new AntennaEntity("antenna-entity", Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
         const antennaEntity = this.antenna.getEntity()
+        this.trackedAntenna = antennaEntity
         if (this.viewer) {
             this.viewer.entities.add(antennaEntity);
             if (tracked) {
