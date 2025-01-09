@@ -199,8 +199,8 @@ export class FlightPath {
     }
 
     private updateSpectrumScale(minSpectrum: number, maxSpectrum: number) {
-        const minSpectrumElement = document.getElementById('min-power');
-        const maxSpectrumElement = document.getElementById('max-power');
+        const minSpectrumElement = document.getElementById('min-spectrum');
+        const maxSpectrumElement = document.getElementById('max-spectrum');
         
         if (minSpectrumElement && maxSpectrumElement) {
             minSpectrumElement.textContent = minSpectrum.toFixed(1);
