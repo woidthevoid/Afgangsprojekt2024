@@ -1,5 +1,5 @@
 import { Cartesian3, ConstantPositionProperty, Entity, HeightReference, Math as CesiumMath, HeadingPitchRoll, Transforms } from "cesium";
-import antenna from "../assets/testantenna.glb"
+//import antenna from "../assets/testantenna.glb"
 
 export class AntennaEntity {
     public id: string;
@@ -18,8 +18,8 @@ export class AntennaEntity {
             position: position,
             orientation: orientation,
             model: {
-                //uri: "qrc:/map/LiveMap/assets/antenna.glb",
-                uri: antenna,
+                uri: "qrc:/map/LiveMap/assets/antenna.glb",
+                //uri: antenna,
                 scale: 0.8,
                 minimumPixelSize: 25,
                 //maximumScale: 200,

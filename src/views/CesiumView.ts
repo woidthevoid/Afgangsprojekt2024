@@ -171,6 +171,48 @@ export class CesiumView {
         });
     }
 
+    addDroneToDropdown(id: string) {
+        const dropdown = document.getElementById("droneSelect") as HTMLSelectElement;
+        if (!dropdown) {
+            return;
+        }
+    
+        if (Array.from(dropdown.options).some(option => option.value === id)) {
+            return;
+        }
+    
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = id;
+    
+        dropdown.appendChild(option);
+    }
+
+    removeDroneFromDropdown(id: string) {
+        const dropdown = document.getElementById("droneSelect") as HTMLSelectElement;
+        if (!dropdown) {
+            return;
+        }
+    
+        const optionToRemove = Array.from(dropdown.options).find(option => option.value === id);
+        if (!optionToRemove) {
+            return;
+        }
+    
+        dropdown.removeChild(optionToRemove);
+    }
+
+    droneSelectionChanged(id: string) {
+        if (!this.viewer) {
+            return;
+        }
+        if (id) {
+            this.followDrone(id, true);
+        } else {
+            this.viewer.trackedEntity = undefined;
+        }
+    }
+
     addAntenna(id: string, lon: number, lat: number, alt: number, heading: number = 0, pitch: number = 0) {
         if (!this.viewer) {
             throw new Error("Viewer is null");
@@ -233,9 +275,10 @@ export class CesiumView {
             droneController.setPayload(payloadEntity)
             droneController.setViewer(this.viewer)
             droneController.payloadController.setViewer(this.viewer)
-            this.viewer.trackedEntity = droneEntity;
+            //this.viewer.trackedEntity = droneEntity;
             this.entityManager.addEntity(droneEntity, droneController)
             this.payloadTrackAntenna(id);
+            this.addDroneToDropdown(id);
             console.log(`CesiumView.ts: Drone added: ${droneEntity.id}`)
             return true;
         } catch (error) {
@@ -338,7 +381,7 @@ export class CesiumView {
         const INITIAL_LONGITUDE = 10.325663942903187;
         const INITIAL_LATITUDE = 55.472172681892225;
         const INITIAL_ALTITUDE = 60;
-        this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, true);
+        this.addDrone2(INITIAL_LONGITUDE, INITIAL_LATITUDE, INITIAL_ALTITUDE, false);
         this.startDroneSimulation();
     }
 
@@ -346,7 +389,8 @@ export class CesiumView {
         if (!this.viewer) {
             throw new Error("Viewer is null");
         }
-        this.drone = new DroneEntity(this.viewer, "drone-id", Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
+        const testdroneid = "drone-id"
+        this.drone = new DroneEntity(this.viewer, testdroneid, Cartesian3.fromDegrees(initialLongitude, initialLatitude, initialAltitude));
         const droneEntity = this.drone.getEntity()
         const payloadEntity = this.drone.getPayload()
         if (tracked) {
@@ -358,7 +402,8 @@ export class CesiumView {
         this.droneController?.payloadController.setViewer(this.viewer)
         this.droneController?.setViewer(this.viewer)
         this.entityManager.addEntity(this.drone.getEntity(), this.droneController)
-        this.payloadTrackAntenna("drone-id");
+        this.payloadTrackAntenna(testdroneid);
+        this.addDroneToDropdown(testdroneid);
 
         const lons: number[] = [];
         const lats: number[] = [];
@@ -378,7 +423,7 @@ export class CesiumView {
             lats.push(newLat);
             alts.push(newAlt);
         }
-        this.droneController.setDeterminedFlightPath(lons,lats,alts);
+        //this.droneController.setDeterminedFlightPath(lons,lats,alts);
     }
 
     addAntenna2(initialLongitude: number, initialLatitude: number, initialAltitude: number, tracked: boolean) {

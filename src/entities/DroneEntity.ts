@@ -1,6 +1,6 @@
 import { Entity, Cartesian3, ReferenceProperty, Quaternion, ConstantProperty, JulianDate, Viewer, HeightReference } from "cesium";
-import drone from "../assets/testdrone.glb"
-import payload from "../assets/camera2.glb"
+//import drone from "../assets/testdrone.glb"
+//import payload from "../assets/camera2.glb"
 
 export class DroneEntity {
     public id: string;
@@ -16,8 +16,8 @@ export class DroneEntity {
         id: this.id,
         position: position,
         model: {
-          //uri: "qrc:/map/LiveMap/assets/drone3.glb",
-          uri: drone,
+          uri: "qrc:/map/LiveMap/assets/drone.glb",
+          //uri: drone,
           scale: 0.6,
           minimumPixelSize: 15,
           //maximumScale: 200,
@@ -45,8 +45,8 @@ export class DroneEntity {
         id: this.payloadId,
         position: positionReference,
         model: {
-          //uri: "qrc:/map/LiveMap/assets/camera.glb",
-          uri: payload,
+          uri: "qrc:/map/LiveMap/assets/payload.glb",
+          //uri: payload,
           scale: 0.8,
           minimumPixelSize: 32,
           //maximumScale: 100,

@@ -7,18 +7,20 @@
     <title>3D live Drone Map</title>
 </head>
 <body>
-    <!-- <div class="button-container">
+    <div class="button-container">
         <button id="addDroneBtn">Add drone</button>
         <button id="addAntennaBtn">Add antenna</button>
-    </div> -->
+    </div>
     <div class="controls">
         <div class="checkbox-container">
-            <input type="checkbox" id="tilesBtn">
             <label for="tilesBtn">Enhanced Details</label>
+            <input type="checkbox" id="tilesBtn">
         </div>
         <div class="checkbox-container">
-            <input type="checkbox" id="followDroneBtn" checked>
-            <label for="followDroneBtn">Follow Drone</label>
+            <label for="droneSelect">Follow Drone</label>
+            <select id="droneSelect">
+                <option value="" selected>None</option>
+            </select>
         </div>
         <!-- <button id="testBtn">init</button> -->
     </div>

@@ -63,7 +63,7 @@ function setupEventListeners() {
         });
     }
 
-    const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
+    /* const followDroneBtn = document.getElementById("followDroneBtn") as HTMLInputElement;
     if (followDroneBtn) {
         followDroneBtn.addEventListener("change", function () {
             const id = "QSDRONE"
@@ -72,6 +72,14 @@ function setupEventListeners() {
             } else {
                 view.followDrone(id, false);
             }
+        });
+    } */
+
+    const droneSelect = document.getElementById("droneSelect") as HTMLSelectElement;
+    if (droneSelect) {
+        droneSelect.addEventListener("change", function () {
+            const selectedId = this.value;
+            view.droneSelectionChanged(selectedId);
         });
     }
 
