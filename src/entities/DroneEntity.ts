@@ -47,8 +47,8 @@ export class DroneEntity {
         model: {
           uri: "qrc:/map/LiveMap/assets/payload.glb",
           //uri: payload,
-          scale: 0.8,
-          minimumPixelSize: 32,
+          scale: 5,
+          //minimumPixelSize: 32,
           //maximumScale: 100,
           //heightReference: HeightReference.RELATIVE_TO_GROUND
         },

@@ -45,6 +45,9 @@ export class FlightPath {
     private calculateColor(spectrum: number): Color {
         // Calculate a color based on the spectrum value
         // Red shade = high value, blue shade = low value
+        if (spectrum == -9999) {
+            return Color.WHITE;
+        }
         const normalizedValue = (spectrum - this.minSpectrum) / (this.maxSpectrum - this.minSpectrum);
         return Color.lerp(Color.BLUE.withAlpha(1.0), Color.RED.withAlpha(1.0), normalizedValue, new Color());
     }
@@ -63,6 +66,7 @@ export class FlightPath {
             this.livePathColors = this.livePathSpectrum.map((spectrumAtPosition) => this.calculateColor(spectrumAtPosition));
             this.updateSpectrumScale(this.minSpectrum, this.maxSpectrum);
         } else {
+            this.livePathSpectrum.push(-9999)
             this.livePathColors.push(Color.WHITE);
         }
     

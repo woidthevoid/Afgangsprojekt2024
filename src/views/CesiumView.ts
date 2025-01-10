@@ -330,6 +330,16 @@ export class CesiumView {
         });
     }
 
+    removeEntity(id: string) {
+        if (!this.viewer) {
+            return;
+        }
+        const entity = this.entityManager.getEntityById(id);
+        if (entity) {
+            this.viewer.entities.remove(entity);
+        }
+    }
+
     setCameraPitch(dy: number) {
         if(!this.viewer) {
             return;

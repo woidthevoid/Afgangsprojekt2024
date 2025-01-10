@@ -16,6 +16,7 @@ declare global {
         resetLiveFlightPath: (id: string) => void;
         removeDeterminedFlightPath: (id: string) => void;
         showScale: (show: string) => void;
+        removeEntity: (entity: string) => void;
         initView: () => void;
     }
 }
@@ -274,6 +275,10 @@ window.showScale = function (show: string) {
         }
     }
 };
+
+window.removeEntity = function(id: string) {
+    view.removeEntity(id);
+}
 
 window.initView = function () {
     init();
