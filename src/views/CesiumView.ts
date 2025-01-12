@@ -45,7 +45,7 @@ export class CesiumView {
         this.tileset = null;
     }
 
-    async initialize() {
+    async initialize(showFps: boolean = false) {
         if (this.viewer) {
             console.warn("Cesium viewer already initialized.");
             return;
@@ -73,7 +73,11 @@ export class CesiumView {
                 vrButton: false, 
                 creditContainer: document.createElement('div') // Hide credits
             });
-            //this.viewer.scene.debugShowFramesPerSecond = true;
+            if (showFps) {
+                this.viewer.scene.debugShowFramesPerSecond = true;
+            }
+            /* this.viewer.scene.fog.density = 0.1;
+            this.viewer.scene.fog.enabled = true; */
             const imageryProvider = await createWorldImageryAsync();
             this.viewer.imageryLayers.addImageryProvider(imageryProvider);
             
@@ -259,6 +263,43 @@ export class CesiumView {
         }
     }
 
+    setDemoFlightPath() {
+        const lons = [
+            10.325311851167728,
+            10.325445796465084,
+            10.325583036089405,
+            10.325722367129929,
+            10.325862490777661,
+            10.326002070965194,
+            10.32613979701825,
+            10.326274443935175,
+            10.326404923285198
+        ]
+        const lats = [
+            55.472227438528265,
+            55.472231986966364,
+            55.47223514342586,
+            55.47223682262517,
+            55.47223697804665,
+            55.47223560549566,
+            55.472232743425856,
+            55.47222846997468,
+            55.4722228971511
+        ]
+        const alts = [
+            192.17184908596928,
+            193.63520646994692,
+            194.64836264747237,
+            195.18433569111573,
+            195.2284382282724,
+            194.77939790773823,
+            193.84945798179493,
+            192.4634382809168,
+            190.6568975453007
+        ]
+        this.drawDeterminedFlightPath("tle", lons, lats, alts);
+    }
+
     addDrone(id: string, lon: number, lat: number, alt: number) {
         if (!this.viewer) {
             throw new Error("Viewer is null");
@@ -306,7 +347,7 @@ export class CesiumView {
                 if (flightPathEnabled == "enabled") {
                     drone.drawLiveFlightPath(lon, lat, alt, spectrumData);
                 }
-                if (showDistance) {
+                if (id == "tle") {
                     drone.drawDistanceLine(lon, lat, alt);
                 }
             }
@@ -337,6 +378,18 @@ export class CesiumView {
         const entity = this.entityManager.getEntityById(id);
         if (entity) {
             this.viewer.entities.remove(entity);
+        }
+    }
+
+    viewerFog(intensity: number, show: boolean) {
+        if (!this.viewer) {
+            return;
+        }
+        if (show) {
+            this.viewer.scene.fog.enabled = true;
+            this.viewer.scene.fog.density = intensity;
+        } else {
+            this.viewer.scene.fog.enabled = false;
         }
     }
 

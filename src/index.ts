@@ -17,7 +17,8 @@ declare global {
         removeDeterminedFlightPath: (id: string) => void;
         showScale: (show: string) => void;
         removeEntity: (entity: string) => void;
-        initView: () => void;
+        viewerFog: (intensity?: number, show?: string) => void;
+        initView: (showFps?: string) => void;
     }
 }
 
@@ -29,12 +30,17 @@ let cesiumView: Viewer | undefined | null = null;
 let isDragging = false;
 let startX: number
 let startY: number
+let hasSetFlightPath = false;
 
-async function init() {
+async function init(showFps: boolean = false) {
     try {
-        cesiumView = await view.initialize();
+        cesiumView = await view.initialize(showFps);
         if (cesiumView !== undefined && cesiumView instanceof Viewer) {
             terrain = Terrain.getInstance(cesiumView);
+        }
+        const controls = document.getElementById('controls-div');
+        if (controls) {
+            controls.style.visibility = "visible";
         }
     } catch (error) {
         console.error('An error occurred during initialization:', error);
@@ -199,10 +205,14 @@ window.updateDronePosition = async function(
                 const spectrumScale = document.getElementById('spectrumScale');
                 if (spectrumData != undefined && spectrumScale) {
                     spectrumScale.style.visibility = "visible";
-                } else if (spectrumScale) {
+                } /* else if (spectrumScale) {
                     spectrumScale.style.visibility = "hidden";
-                }
+                } */
                 view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, spectrumData);
+            }
+            if (!hasSetFlightPath) {
+                hasSetFlightPath = true;
+                view.setDemoFlightPath();
             }
         } catch (error) {
             console.error("Error when trying to update drone position - ", error);
@@ -233,7 +243,11 @@ window.setFlightPath = function(
     altitudes: number[]
 ) {
     //const id = "QSDRONE";
-    view.drawDeterminedFlightPath(id, longitudes, latitudes, altitudes);
+    const groundRef = terrain?.getGroundRef();
+    if (groundRef) {
+        const updatedAltitudes = altitudes.map(altitude => altitude + groundRef);
+        view.drawDeterminedFlightPath(id, longitudes, latitudes, updatedAltitudes);
+    }
 };
 
 window.removeLiveFlightPath = function(id: string) {
@@ -280,12 +294,22 @@ window.removeEntity = function(id: string) {
     view.removeEntity(id);
 }
 
-window.initView = function () {
-    init();
+window.initView = function (showFps: string = "false") {
+    if (showFps == "true") {
+        init(true);
+    } else {
+        init(false);
+    }
 };
+
+window.viewerFog = function (intensity: number = 0.1, show: string = "true") {
+    if (show == "true") {
+        view.viewerFog(intensity, true);
+    } else {
+        view.viewerFog(intensity, false);
+    }
+}
 
 setupEventListeners();
 
 //init();
-
-

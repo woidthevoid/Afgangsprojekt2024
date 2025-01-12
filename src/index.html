@@ -11,7 +11,7 @@
         <button id="addDroneBtn">Add drone</button>
         <button id="addAntennaBtn">Add antenna</button>
     </div> -->
-    <div class="controls">
+    <div class="controls" id="controls-div" style="visibility: hidden;">
         <div class="checkbox-container">
             <label for="tilesBtn">Enhanced Details</label>
             <input type="checkbox" id="tilesBtn">
@@ -27,6 +27,7 @@
     <div id="spectrumScale" class="spectrum-scale" style="visibility: hidden;">
         <div class="labels">
             <span id="ampl-title" style="font-weight: bold;">Amplitude</span>
+            <span style="font-weight: bold;">(dBm)</span>
             <span id="max-spectrum">0</span>
         </div>
         <div class="color-gradient"></div>
