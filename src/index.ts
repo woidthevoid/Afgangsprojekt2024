@@ -210,7 +210,7 @@ window.updateDronePosition = async function(
                 } */
                 view.updateDronePos(id, lon, lat, realAlt, flightPathEnabled, spectrumData);
             }
-            if (!hasSetFlightPath) {
+            if (!hasSetFlightPath && id == "tle") {
                 hasSetFlightPath = true;
                 view.setDemoFlightPath();
             }
