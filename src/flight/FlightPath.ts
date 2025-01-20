@@ -252,18 +252,18 @@ export class FlightPath {
             }
         });
 
-        /* const terrainHeight = this.terrain.getGroundRef();
+        const terrainHeight = this.terrain.getGroundRef();
         const correctedAlts = alts.map((altitude) => {
             const updatedAltitude = terrainHeight + altitude;
             return updatedAltitude;
-        }); */
+        });
 
         this.determinedPathPositions = lons.map((longitude, index) => 
-            Cartesian3.fromDegrees(longitude, lats[index], alts[index])
+            Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
         );
 
         const positions = lons.map((longitude, index) => 
-            Cartesian3.fromDegrees(longitude, lats[index], alts[index])
+            Cartesian3.fromDegrees(longitude, lats[index], correctedAlts[index])
         );
 
         // Add determined path to view
@@ -279,7 +279,7 @@ export class FlightPath {
         // Add starting point to view
         this.determinedStartPoint = this.viewer.entities.add({
             id: 'start-point-determined-path',
-            position: Cartesian3.fromDegrees(lons[0], lats[0], alts[0]),
+            position: Cartesian3.fromDegrees(lons[0], lats[0], correctedAlts[0]),
             point: {
                 color: Color.GREEN,
                 pixelSize: 10,
@@ -293,7 +293,7 @@ export class FlightPath {
         // Add end point to view
         this.determinedEndPoint = this.viewer.entities.add({
             id: 'end-point-determined-path',
-            position: Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], alts[alts.length - 1]),
+            position: Cartesian3.fromDegrees(lons[lons.length - 1], lats[lats.length - 1], correctedAlts[alts.length - 1]),
             point: {
                 color: Color.RED,
                 pixelSize: 10,
